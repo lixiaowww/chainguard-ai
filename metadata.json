@@ -1,0 +1,8 @@
+{
+  "name": "ChainGuard AI",
+  "description": "Proactive cargo compliance and liability recovery platform for global cold-chain logistics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

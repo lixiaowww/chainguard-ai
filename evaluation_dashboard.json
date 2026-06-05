@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-06-05 10:49:59",
+  "avg_latency_sec": 7.33,
+  "accuracy_rate": "100.0%",
+  "average_deviation_error": "0.0%",
+  "results": [
+    {
+      "name": "Cherries Customs Delay (Customs Exemption)",
+      "latency_sec": 7.2,
+      "expected_party": "Port Authority",
+      "actual_party": "Port Authority",
+      "party_correct": "\u2705 MATCH",
+      "expected_loss": 48000.0,
+      "actual_loss": 48000.0,
+      "deviation_pct": "0.0%"
+    },
+    {
+      "name": "mRNA Vaccine Cold Chain Breach (Carrier Failure)",
+      "latency_sec": 7.76,
+      "expected_party": "Carrier",
+      "actual_party": "Carrier",
+      "party_correct": "\u2705 MATCH",
+      "expected_loss": 500000.0,
+      "actual_loss": 500000.0,
+      "deviation_pct": "0.0%"
+    },
+    {
+      "name": "Fine Burgundy Wine Mechanical Drop (Shock Breach)",
+      "latency_sec": 7.02,
+      "expected_party": "Carrier",
+      "actual_party": "Carrier",
+      "party_correct": "\u2705 MATCH",
+      "expected_loss": 15000.0,
+      "actual_loss": 15000.0,
+      "deviation_pct": "0.0%"
+    }
+  ]
+}

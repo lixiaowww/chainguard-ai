@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-hd-bg: #E4E3E0;
+  --color-hd-ink: #141414;
+  --color-hd-line: #141414;
+  --color-hd-alert: #D32F2F;
+  --color-hd-warning: #F57C00;
+  
+  --font-serif-georgia: Georgia, ui-serif, Cambria, "Times New Roman", Times, serif;
+}
+
+body {
+  background-color: var(--color-hd-bg);
+  color: var(--color-hd-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
