@@ -6,9 +6,3 @@ coverage/
 *.log
 .env*
 !.env.example
-venv/
-__pycache__/
-tms_claims/
-audit_chain.json
-tms_events.json
-server.js

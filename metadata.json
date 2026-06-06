@@ -1,8 +1,6 @@
 {
-  "name": "ChainGuard AI",
-  "description": "Proactive cargo compliance and liability recovery platform for global cold-chain logistics.",
+  "name": "Market Intelligence Engine",
+  "description": "An AI Chief Editor that proactively scans global communities (Reddit, X, Discord) to identify high-value market gaps and provide product selection strategies.",
   "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -1,17 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
-  --color-hd-bg: #E4E3E0;
-  --color-hd-ink: #141414;
-  --color-hd-line: #141414;
-  --color-hd-alert: #D32F2F;
-  --color-hd-warning: #F57C00;
-  
-  --font-serif-georgia: Georgia, ui-serif, Cambria, "Times New Roman", Times, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
 }
 
-body {
-  background-color: var(--color-hd-bg);
-  color: var(--color-hd-ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+@layer base {
+  body {
+    @apply bg-slate-900 text-slate-300 font-sans antialiased;
+  }
+  
+  /* Custom Scrollbar for better UI experience */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-600 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-500;
+  }
+}
+
+/* Validation Report Custom Styling */
+.markdown-body h3:contains("Validation Score"),
+.markdown-body h3:contains("商业建模评分") {
+  @apply border-l-4 border-cyan-500 pl-4 my-6 text-cyan-400;
+}
+
+.markdown-body h3:contains("Riskiest Assumption"),
+.markdown-body h3:contains("最危险假设") {
+  @apply border-l-4 border-amber-500 pl-4 my-6 text-amber-400;
+}
+
+.markdown-body blockquote {
+  @apply bg-slate-800/50 border-slate-700 rounded-lg p-4 italic text-slate-300;
+}
+
+/* Status Badges */
+.markdown-body span:contains("PURSUE"),
+.markdown-body strong:contains("PURSUE"),
+.markdown-body code:contains("PURSUE") {
+  @apply bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/30 font-bold;
+}
+
+.markdown-body span:contains("TEST"),
+.markdown-body strong:contains("TEST"),
+.markdown-body code:contains("TEST") {
+  @apply bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded border border-amber-500/30 font-bold;
+}
+
+.markdown-body span:contains("PIVOT"),
+.markdown-body strong:contains("PIVOT"),
+.markdown-body code:contains("PIVOT") {
+  @apply bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded border border-indigo-500/30 font-bold;
+}
+
+.markdown-body span:contains("DROP"),
+.markdown-body strong:contains("DROP"),
+.markdown-body code:contains("DROP") {
+  @apply bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded border border-rose-500/30 font-bold;
 }
