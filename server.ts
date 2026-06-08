@@ -606,9 +606,26 @@ ${reportText}`;
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, { index: false })); // Disable default index serving
+
     app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+      const indexPath = path.join(distPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        let html = fs.readFileSync(indexPath, 'utf8');
+        
+        // Inject runtime environment variables for the frontend
+        const runtimeEnv = {
+          VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
+        };
+        
+        const envScript = `<script>window.__ENV__ = ${JSON.stringify(runtimeEnv)};</script>`;
+        html = html.replace('<head>', `<head>${envScript}`);
+        
+        res.send(html);
+      } else {
+        res.status(404).send('Build not found');
+      }
     });
   }
 
