@@ -6,6 +6,7 @@ import OpenAI from "openai";
 import dotenv from "dotenv";
 import { ValidationService } from "./src/lib/ValidationService";
 import { createClient } from "@supabase/supabase-js";
+import ws from "ws";
 
 dotenv.config();
 
@@ -73,7 +74,11 @@ async function startServer() {
   // Supabase client initialization
   const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
   const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "";
-  const supabase = (supabaseUrl && supabaseAnonKey) ? createClient(supabaseUrl, supabaseAnonKey) : null;
+  const supabase = (supabaseUrl && supabaseAnonKey) ? createClient(supabaseUrl, supabaseAnonKey, {
+    realtime: {
+      transport: ws,
+    },
+  }) : null;
   if (!supabase) {
     console.warn("Supabase credentials missing. Supabase persistence is disabled. Falling back to in-memory store.");
   }
