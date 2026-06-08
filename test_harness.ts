@@ -361,6 +361,12 @@ test("API Biophysics & Legal: Bananas Ocean Freight with Telemetry Gap", async (
   assertEquals(scientific.includes("banana"), true, "Reasoning should contain banana");
   assertEquals(scientific.includes("chilling"), true, "Reasoning should mention chilling injury");
   assertEquals(scientific.includes("gaps") || scientific.includes("bounds"), true, "Reasoning should mention gaps/bounds");
+  
+  // Verify thermodynamic cooling/warming model bounds
+  const intervals = report.damage_assessment.uncertainty_intervals;
+  assertEquals(intervals.length, 1);
+  assertEquals(intervals[0].lower_bound_temp, 9.5, "Lower bound should be calculated using active cooling thermodynamic model");
+  assertEquals(intervals[0].upper_bound_temp, 16.79, "Upper bound should be calculated using Newtonian heating decay model");
 });
 
 test("API Biophysics & Legal: mRNA Vaccine Freezing Total Loss & Air Cap", async () => {
@@ -405,6 +411,81 @@ test("API Biophysics & Legal: mRNA Vaccine Freezing Total Loss & Air Cap", async
   const scientific = report.damage_assessment.scientific_reasoning.toLowerCase();
   assertEquals(scientific.includes("freezing"), true, "Reasoning should mention freezing");
   assertEquals(scientific.includes("vaccine"), true, "Reasoning should mention vaccine");
+});
+
+test("API Biophysics & Legal: Ocean Freight with Package Limit Dominance on Express Proxy", async () => {
+  const webhookUrl = "http://localhost:3000/api/tms/webhook";
+  
+  try {
+    const health = await fetch("http://localhost:3000/api/tms/audits");
+    if (health.status !== 200) throw new Error();
+  } catch {
+    console.log("⚠️  Skipping Package Limit Dominance test: Local Express server is not running on port 3000");
+    return;
+  }
+
+  // Under Hague-Visby rules (Ocean):
+  // Cargo weight: 10 kg -> 10 * 2 SDR/kg * 1.31 USD/SDR = 26.20 USD weight-based limit
+  // Package count: 10 -> 10 * 666.67 SDR/package * 1.31 USD/SDR = 8,733.38 USD package-based limit
+  // Cargo value: 15000 USD. Severe excursion -> 100% loss (15000 USD loss)
+  const payload = {
+    shipmentId: "TEST-PKG-DOMINANT-NODE-88",
+    carrier: "TransAtlantic Ocean Lines",
+    commodity: "Organic Cavendish Bananas", // Ocean transport
+    weightKg: 10,
+    cargoValUsd: 15000,
+    packageCount: 10,
+    tempLogs: [
+      { time: "2026-06-08T08:00:00Z", temp: 1.0, carrierCustody: true, durationHours: 4 } // severe chilling excursion -> 100% loss
+    ]
+  };
+
+  const res = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  assertEquals(res.status, 200);
+  const json = await res.json();
+  assertEquals(json.success, true);
+  
+  const audit = json.audit;
+  assertEquals(audit.limitValUsd, 8733.38, "Should choose package-based limit of 8,733.38 USD over weight-based 26.20 USD");
+  assertEquals(audit.liableClaimUsd, 8733.38, "Liable claim should be capped at package-based limit");
+});
+
+test("API Security: In-Memory Rate-Limiting (Run Last)", async () => {
+  const url = "http://localhost:8081/v1/audit/verify";
+  
+  try {
+    const health = await fetch("http://localhost:8081/health");
+    if (health.status !== 200) throw new Error();
+  } catch {
+    console.log("⚠️  Skipping rate-limiting test: Local FastAPI server is not running on port 8081");
+    return;
+  }
+
+  console.log("      [Rate Limit Test] Sending 61 requests to verify endpoint to trigger 429...");
+  const dummyBlob = new Blob([Buffer.from("dummy pdf content")], { type: "application/pdf" });
+  let hitRateLimit = false;
+
+  for (let i = 0; i < 62; i++) {
+    const formData = new FormData();
+    formData.append("pdf_file", dummyBlob, "dummy.pdf");
+    
+    const res = await fetch(url, {
+      method: "POST",
+      body: formData
+    });
+
+    if (res.status === 429) {
+      hitRateLimit = true;
+      break;
+    }
+  }
+
+  assertEquals(hitRateLimit, true, "Should hit rate limit of 60 requests/min and return 429");
 });
 
 // ==========================================

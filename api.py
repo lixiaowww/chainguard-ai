@@ -6,17 +6,40 @@ import shutil
 import hashlib
 
 from typing import Optional
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, Response
+from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel
+import time
+from collections import defaultdict
 
 # Import existing codebase items
 from crew_orchestrator import load_and_extract_contract_terms
 from liability_scorer import LiabilityScorer
 from generate_claim_pdf import generate_claim_pdf
-from fastapi.responses import Response
 
 app = FastAPI(title="ChainGuard AI RESTful Audit API", version="2.0.0")
+
+rate_limit_store = defaultdict(list)
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path.rstrip("/")
+        if request.method == "POST" and path in ["/v1/audit", "/v1/audit/verify"]:
+            client_ip = request.client.host if request.client else "127.0.0.1"
+            now = time.time()
+            rate_limit_store[client_ip] = [t for t in rate_limit_store[client_ip] if now - t < 60]
+            if len(rate_limit_store[client_ip]) >= 60:
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "Too many requests. Rate limit is 60 requests per minute per IP."}
+                )
+            rate_limit_store[client_ip].append(now)
+        return await call_next(request)
+
+# Register rate limiting middleware first
+app.add_middleware(RateLimitMiddleware)
 
 # Enable CORS for developer ease
 app.add_middleware(
@@ -107,7 +130,7 @@ def solve_liability_limit(weight_kg: float, transport_mode: str, packages: Optio
         else:
             return weight_limit
 
-def calculate_biophysical_metrics(commodity: str, telemetry: list, weight_kg: float, cargo_val_usd: float, transport_mode: str, incident_context: str) -> dict:
+def calculate_biophysical_metrics(commodity: str, telemetry: list, weight_kg: float, cargo_val_usd: float, transport_mode: str, incident_context: str, packages: Optional[int] = None) -> dict:
     from dateutil.parser import parse as parse_date
     import math
     
@@ -167,6 +190,23 @@ def calculate_biophysical_metrics(commodity: str, telemetry: list, weight_kg: fl
                 dt2 = pt["dt"].replace(tzinfo=None)
                 pt["duration_hours"] = max(1.0, (dt2 - dt1).total_seconds() / 3600.0)
         
+    comm_lower = commodity.lower()
+    is_vaccine = any(x in comm_lower for x in ["vaccine", "pharm", "med", "insulin"])
+    is_banana = any(x in comm_lower for x in ["banana", "fruit", "produce"])
+    
+    target_temp = 2.0
+    k_val = 0.12
+    t_ambient = 20.0
+    
+    if is_vaccine:
+        target_temp = 8.0
+        k_val = 0.05
+        t_ambient = 25.0
+    elif is_banana:
+        target_temp = 13.0
+        k_val = 0.12
+        t_ambient = 20.0
+
     gaps_detected = []
     uncertainty_intervals = []
     max_temp_seen = -999.0
@@ -196,11 +236,19 @@ def calculate_biophysical_metrics(commodity: str, telemetry: list, weight_kg: fl
                 })
                 t1 = pt["temperature"]
                 t2 = next_pt["temperature"]
-                t_min = min(t1, t2)
-                t_max = max(t1, t2)
-                margin = min(5.0, 0.5 * gap_hours)
-                lower_bound = max(-20.0, t_min - margin)
-                upper_bound = min(50.0, t_max + margin)
+                
+                # Thermodynamic heating decay toward ambient (power loss scenario)
+                upper_bound = t_ambient + (t1 - t_ambient) * math.exp(-k_val * gap_hours)
+                upper_bound = max(t1, t2, upper_bound)
+                
+                # Thermodynamic active cooling decay toward target_temp (normal reefer control)
+                lower_bound = target_temp + (t1 - target_temp) * math.exp(-k_val * gap_hours)
+                lower_bound = min(t1, t2, lower_bound)
+                
+                # Apply safety margin bounds
+                lower_bound = max(-20.0, lower_bound - 0.5)
+                upper_bound = min(50.0, upper_bound + 0.5)
+                
                 uncertainty_intervals.append({
                     "gap_start": pt["time_str"],
                     "gap_end": next_pt["time_str"],
@@ -209,20 +257,13 @@ def calculate_biophysical_metrics(commodity: str, telemetry: list, weight_kg: fl
                     "upper_bound_temp": round(upper_bound, 2)
                 })
 
-    comm_lower = commodity.lower()
-    is_vaccine = any(x in comm_lower for x in ["vaccine", "pharm", "med", "insulin"])
-    is_banana = any(x in comm_lower for x in ["banana", "fruit", "produce"])
-    
-    target_temp = 2.0
     optimal_range = [0.0, 2.0]
     hourly_base_rate = 0.2
     
     if is_vaccine:
-        target_temp = 8.0
         optimal_range = [2.0, 8.0]
         hourly_base_rate = 0.5
     elif is_banana:
-        target_temp = 13.0
         optimal_range = [13.0, 15.0]
         hourly_base_rate = 3.0
 
@@ -291,7 +332,7 @@ def calculate_biophysical_metrics(commodity: str, telemetry: list, weight_kg: fl
     if status == "TOTAL_LOSS":
         estimated_loss_usd = cargo_val_usd
 
-    limit_val_usd = solve_liability_limit(weight_kg, transport_mode)
+    limit_val_usd = solve_liability_limit(weight_kg, transport_mode, packages)
     liable_claim_usd = estimated_loss_usd if excursion_in_custody else 0.0
     liable_claim_usd = min(liable_claim_usd, limit_val_usd)
     liable_claim_usd = round(liable_claim_usd, 2)
@@ -451,6 +492,8 @@ class PDFGenerationPayload(BaseModel):
     telemetry: Optional[list] = None
     weight_kg: Optional[float] = 180.0
     transport_mode: Optional[str] = "Air"
+    packages: Optional[int] = None
+    package_count: Optional[int] = None
 
 @app.post("/v1/audit/pdf")
 async def export_audit_pdf(payload: PDFGenerationPayload):
@@ -471,7 +514,8 @@ async def export_audit_pdf(payload: PDFGenerationPayload):
         pdf_payload["input_seal"] = input_seal
         pdf_payload["anchored_tx_id"] = anchored_tx_id
         
-        limit_val = solve_liability_limit(payload.weight_kg, payload.transport_mode)
+        packages = payload.packages if payload.packages is not None else payload.package_count
+        limit_val = solve_liability_limit(payload.weight_kg, payload.transport_mode, packages)
         pdf_payload["limit_val_usd"] = limit_val
         
         pdf_bytes = generate_claim_pdf(pdf_payload)
@@ -506,7 +550,9 @@ async def audit_shipment(
     incident_context: Optional[str] = Form(None),
     mock: bool = Form(False),
     weight_kg: Optional[float] = Form(180.0),
-    transport_mode: Optional[str] = Form("Air")
+    transport_mode: Optional[str] = Form("Air"),
+    packages: Optional[int] = Form(None),
+    package_count: Optional[int] = Form(None)
 ):
     try:
         # 1. Parse telemetry JSON string
@@ -534,13 +580,15 @@ async def audit_shipment(
         terms = load_and_extract_contract_terms(temp_pdf_path, mock=mock)
 
         # Solve biophysical metrics
+        resolved_packages = packages if packages is not None else package_count
         biophysical = calculate_biophysical_metrics(
             commodity=cargo_type,
             telemetry=sanitized_telemetry,
             weight_kg=weight_kg,
             cargo_val_usd=commercial_value,
             transport_mode=transport_mode,
-            incident_context=masked_incident_context
+            incident_context=masked_incident_context,
+            packages=resolved_packages
         )
 
         # 4. Multi-Agent Liability Scorer (Reasoning Loop)
@@ -636,6 +684,8 @@ class TMSWebhookPayload(BaseModel):
     telemetry: list
     weight_kg: Optional[float] = 180.0
     transport_mode: Optional[str] = "Air"
+    packages: Optional[int] = None
+    package_count: Optional[int] = None
 
 @app.post("/v1/tms/webhook")
 def receive_tms_webhook(payload: TMSWebhookPayload):
@@ -660,6 +710,7 @@ def receive_tms_webhook(payload: TMSWebhookPayload):
         mock_mode = os.environ.get("GEMINI_API_KEY") is None
         terms = load_and_extract_contract_terms(full_pdf_path, mock=mock_mode)
         
+        resolved_packages = payload.packages if payload.packages is not None else payload.package_count
         # Solve biophysical metrics
         biophysical = calculate_biophysical_metrics(
             commodity=payload.cargo_type,
@@ -667,7 +718,8 @@ def receive_tms_webhook(payload: TMSWebhookPayload):
             weight_kg=payload.weight_kg or 180.0,
             cargo_val_usd=payload.commercial_value_usd,
             transport_mode=payload.transport_mode or "Air",
-            incident_context=masked_incident_context
+            incident_context=masked_incident_context,
+            packages=resolved_packages
         )
 
         # 4. Multi-Agent Liability Scorer (Reasoning Loop)
@@ -719,6 +771,8 @@ def receive_tms_webhook(payload: TMSWebhookPayload):
             else:
                 report["damage_assessment"]["scientific_reasoning"] = biophysical["scientific_reasoning"]
             
+            report["damage_assessment"]["uncertainty_intervals"] = biophysical["uncertainty_intervals"]
+            
             if not report["liability_assignment"].get("liable_party") or mock_mode:
                 if "customs" in (payload.incident_context or "").lower():
                     report["liability_assignment"]["liable_party"] = "Port Authority"
@@ -760,7 +814,8 @@ def receive_tms_webhook(payload: TMSWebhookPayload):
             "transport_mode": payload.transport_mode or "Air",
             "weight_kg": payload.weight_kg or 180.0,
             "limit_val_usd": biophysical["limit_val_usd"],
-            "anchored_tx_id": anchored_tx_id
+            "anchored_tx_id": anchored_tx_id,
+            "packages": resolved_packages
         }
         pdf_bytes = generate_claim_pdf(pdf_payload)
         

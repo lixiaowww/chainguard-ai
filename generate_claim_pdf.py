@@ -175,6 +175,7 @@ def generate_claim_pdf(payload: dict) -> bytes:
     
     transport_mode = payload.get("transport_mode", "Air")
     weight_kg = payload.get("weight_kg", 180.0)
+    packages = payload.get("packages") if payload.get("packages") is not None else payload.get("package_count")
     
     # Calculate or get limit_val_usd
     limit_val = payload.get("limit_val_usd", 0.0)
@@ -183,12 +184,20 @@ def generate_claim_pdf(payload: dict) -> bytes:
         if transport_mode == "Air":
             limit_val = weight_kg * 22.0 * SDR_RATE
         else:
-            limit_val = weight_kg * 2.0 * SDR_RATE
+            weight_limit = weight_kg * 2.0 * SDR_RATE
+            if packages is not None and packages > 0:
+                package_limit = packages * 666.67 * SDR_RATE
+                limit_val = max(weight_limit, package_limit)
+            else:
+                limit_val = weight_limit
             
     if transport_mode == "Air":
         convention_text = f"Applied legal convention: <b>Montreal Convention Article 22</b> (cap of 22 SDR/kg @ 1 SDR = $1.31 USD). For cargo weight of {weight_kg:.2f} kg, the liability cap is <b>${limit_val:,.2f} USD</b>."
     else:
-        convention_text = f"Applied legal convention: <b>Hague-Visby Rules</b> (cap of 2 SDR/kg @ 1 SDR = $1.31 USD). For cargo weight of {weight_kg:.2f} kg, the liability cap is <b>${limit_val:,.2f} USD</b>."
+        if packages is not None and packages > 0:
+            convention_text = f"Applied legal convention: <b>Hague-Visby Rules</b> (cap of 2 SDR/kg or 666.67 SDR/package, whichever is higher, @ 1 SDR = $1.31 USD). For cargo weight of {weight_kg:.2f} kg and package count of {packages}, the liability cap is <b>${limit_val:,.2f} USD</b>."
+        else:
+            convention_text = f"Applied legal convention: <b>Hague-Visby Rules</b> (cap of 2 SDR/kg @ 1 SDR = $1.31 USD). For cargo weight of {weight_kg:.2f} kg, the liability cap is <b>${limit_val:,.2f} USD</b>."
         
     story.append(Paragraph(convention_text, body_style))
     story.append(Spacer(1, 4))
@@ -222,6 +231,21 @@ def generate_claim_pdf(payload: dict) -> bytes:
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#bbf7d0')), # green-200
     ]))
     story.append(sig_table)
+    story.append(Spacer(1, 6))
+    
+    footnote_text = (
+        "<i>* Note: Special Drawing Rights (SDR) rates are calculated at a fixed base rate of "
+        "1 SDR = 1.31 USD for audit standardization. Actual claim values may be subject to the "
+        "official IMF exchange rate on the date of loading or claim filing.</i>"
+    )
+    footnote_style = ParagraphStyle(
+        'LegalFootnote',
+        parent=body_style,
+        fontSize=7,
+        leading=9,
+        textColor=colors.HexColor('#64748b') # slate-500
+    )
+    story.append(Paragraph(footnote_text, footnote_style))
     
     # 7. Cryptographic Verification & Audit Seal
     input_seal = payload.get("input_seal", "N/A")

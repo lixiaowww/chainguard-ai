@@ -263,7 +263,7 @@ async function startServer() {
   // =========================================================================
 
   app.post("/api/tms/webhook", async (req, res) => {
-    const { shipmentId, carrier, commodity, weightKg, cargoValUsd, tempLogs, userId } = req.body;
+    const { shipmentId, carrier, commodity, weightKg, cargoValUsd, tempLogs, userId, packageCount } = req.body;
 
     if (!shipmentId || !commodity || !weightKg || !cargoValUsd || !tempLogs || !Array.isArray(tempLogs)) {
       return res.status(400).json({ error: "Missing required shipment audit fields." });
@@ -311,7 +311,8 @@ async function startServer() {
           incident_context: incidentContext,
           telemetry: cleanTelemetry,
           weight_kg: Number(weightKg),
-          transport_mode: transportMode
+          transport_mode: transportMode,
+          package_count: packageCount !== undefined && packageCount !== null ? Number(packageCount) : undefined
         })
       });
 
@@ -328,9 +329,18 @@ async function startServer() {
 
       // Calculate auxiliary metrics
       const SDR_RATE = 1.31;
-      const limitValUsd = transportMode === "Air" 
-        ? Math.round(Number(weightKg) * 22 * SDR_RATE * 100) / 100
-        : Math.round(Number(weightKg) * 2 * SDR_RATE * 100) / 100;
+      let limitValUsd = 0;
+      if (transportMode === "Air") {
+        limitValUsd = Math.round(Number(weightKg) * 22 * SDR_RATE * 100) / 100;
+      } else {
+        const weightLimit = Number(weightKg) * 2 * SDR_RATE;
+        if (packageCount !== undefined && packageCount !== null && Number(packageCount) > 0) {
+          const packageLimit = Number(packageCount) * 666.67 * SDR_RATE;
+          limitValUsd = Math.round(Math.max(weightLimit, packageLimit) * 100) / 100;
+        } else {
+          limitValUsd = Math.round(weightLimit * 100) / 100;
+        }
+      }
         
       const estimatedLossUsd = damage.estimated_loss_usd || 0;
       const excursionInCustody = liability.liable_party === "Carrier" || liability.fault_percentage > 0;
@@ -366,6 +376,7 @@ async function startServer() {
         liabilityScore: liability.fault_percentage || 0,
         claimStatus: claimStatus as 'CLEAR' | 'WARNING' | 'CLAIM_PENDING',
         tempLogs,
+        uncertaintyIntervals: damage.uncertainty_intervals || [],
         created_at: new Date().toISOString()
       };
 
@@ -439,6 +450,7 @@ async function startServer() {
           liabilityScore: row.liability_score,
           claimStatus: row.claim_status,
           tempLogs: row.temp_logs,
+          uncertaintyIntervals: row.uncertainty_intervals || [],
           created_at: row.created_at
         }));
         return res.json(mapped);

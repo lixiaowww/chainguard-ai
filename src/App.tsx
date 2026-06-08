@@ -1041,6 +1041,271 @@ const SCENARIOS = {
   }
 };
 
+interface TelemetryChartProps {
+  tempLogs: any[];
+  commodity: string;
+  uncertaintyIntervals?: any[];
+}
+
+export function TelemetryChart({ tempLogs, commodity, uncertaintyIntervals }: TelemetryChartProps) {
+  const displayLogs = (tempLogs || []).filter((l: any) => !l.meta);
+  if (displayLogs.length === 0) {
+    return <div className="text-slate-500 text-xs italic text-center py-4 bg-slate-950/40 rounded-xl border border-slate-900">暂无遥测轨迹数据</div>;
+  }
+
+  const commLower = commodity.toLowerCase();
+  const isVaccine = commLower.includes('vaccine') || commLower.includes('pharm');
+  const isBanana = commLower.includes('banana') || commLower.includes('fruit') || commLower.includes('produce');
+
+  // Optimal range and boundaries
+  let optimalMin = 0;
+  let optimalMax = 2;
+  let chartMinTemp = -2;
+  let chartMaxTemp = 10;
+
+  if (isVaccine) {
+    optimalMin = 2;
+    optimalMax = 8;
+    chartMinTemp = -5;
+    chartMaxTemp = 28;
+  } else if (isBanana) {
+    optimalMin = 13;
+    optimalMax = 15;
+    chartMinTemp = 5;
+    chartMaxTemp = 20;
+  } else {
+    // Cherry or general
+    optimalMin = 0;
+    optimalMax = 2;
+    chartMinTemp = -2;
+    chartMaxTemp = 15;
+  }
+
+  // Adjust chart y-bounds dynamically if telemetry exceeds defaults
+  const temps = displayLogs.map(l => l.temp !== undefined ? l.temp : (l.temperature || 0));
+  const minSeen = Math.min(...temps);
+  const maxSeen = Math.max(...temps);
+  chartMinTemp = Math.min(chartMinTemp, Math.floor(minSeen - 2));
+  chartMaxTemp = Math.max(chartMaxTemp, Math.ceil(maxSeen + 2));
+
+  const width = 500;
+  const height = 180;
+  const paddingLeft = 40;
+  const paddingRight = 20;
+  const paddingTop = 15;
+  const paddingBottom = 25;
+
+  const chartWidth = width - paddingLeft - paddingRight;
+  const chartHeight = height - paddingTop - paddingBottom;
+
+  // X coordinate mapping
+  const getX = (index: number) => {
+    if (displayLogs.length <= 1) return paddingLeft + chartWidth / 2;
+    return paddingLeft + (index / (displayLogs.length - 1)) * chartWidth;
+  };
+
+  // Y coordinate mapping
+  const getY = (temp: number) => {
+    const range = chartMaxTemp - chartMinTemp;
+    if (range === 0) return paddingTop + chartHeight / 2;
+    return paddingTop + chartHeight - ((temp - chartMinTemp) / range) * chartHeight;
+  };
+
+  const optYMax = getY(optimalMax);
+  const optYMin = getY(optimalMin);
+
+  // Generate temperature line path
+  const linePoints = displayLogs.map((log, idx) => {
+    const t = log.temp !== undefined ? log.temp : (log.temperature || 0);
+    return `${getX(idx)},${getY(t)}`;
+  });
+  const linePath = `M ${linePoints.join(' L ')}`;
+
+  // Generate gaps shading polygons
+  const gapElements: any[] = [];
+  if (uncertaintyIntervals && uncertaintyIntervals.length > 0) {
+    uncertaintyIntervals.forEach((gap, gapIdx) => {
+      const startIdx = displayLogs.findIndex(l => (l.time || l.timestamp) === gap.gap_start);
+      const endIdx = displayLogs.findIndex(l => (l.time || l.timestamp) === gap.gap_end);
+      if (startIdx !== -1 && endIdx !== -1) {
+        const xStart = getX(startIdx);
+        const xEnd = getX(endIdx);
+        
+        const yStartTemp = getY(displayLogs[startIdx].temp !== undefined ? displayLogs[startIdx].temp : displayLogs[startIdx].temperature);
+        const yUpper = getY(gap.upper_bound_temp);
+        const yLower = getY(gap.lower_bound_temp);
+
+        const pointsString = `${xStart},${yStartTemp} ${xEnd},${yUpper} ${xEnd},${yLower} ${xStart},${yStartTemp}`;
+
+        gapElements.push(
+          <g key={`gap-${gapIdx}`}>
+            <polygon 
+              points={pointsString} 
+              fill="url(#gapGrad)" 
+              opacity="0.25"
+            />
+            <line 
+              x1={xStart} y1={yStartTemp} 
+              x2={xEnd} y2={yUpper} 
+              stroke="#22d3ee" strokeWidth="1" strokeDasharray="2,2"
+            />
+            <line 
+              x1={xStart} y1={yStartTemp} 
+              x2={xEnd} y2={yLower} 
+              stroke="#22d3ee" strokeWidth="1" strokeDasharray="2,2"
+            />
+            <text 
+              x={(xStart + xEnd) / 2} 
+              y={Math.min(yUpper, yLower) - 4} 
+              fill="#22d3ee" 
+              fontSize="7" 
+              fontWeight="bold"
+              textAnchor="middle"
+              className="pointer-events-none select-none animate-pulse"
+            >
+              数据断流 ({gap.gap_duration_hours.toFixed(1)}h)
+            </text>
+          </g>
+        );
+      }
+    });
+  }
+
+  // Draw grid lines
+  const gridLines: any[] = [];
+  const range = chartMaxTemp - chartMinTemp;
+  const step = range > 10 ? 5 : (range > 4 ? 2 : 1);
+  const startGrid = Math.ceil(chartMinTemp / step) * step;
+  for (let t = startGrid; t <= chartMaxTemp; t += step) {
+    const yVal = getY(t);
+    gridLines.push(
+      <g key={`grid-${t}`}>
+        <line 
+          x1={paddingLeft} y1={yVal} 
+          x2={width - paddingRight} y2={yVal} 
+          stroke="#334155" strokeWidth="0.5" strokeDasharray="2,2"
+          opacity="0.4"
+        />
+        <text 
+          x={paddingLeft - 6} y={yVal + 3} 
+          fill="#64748b" fontSize="7" textAnchor="end" className="font-mono"
+        >
+          {t}°C
+        </text>
+      </g>
+    );
+  }
+
+  return (
+    <div className="bg-slate-950/40 border border-slate-800/60 p-4 rounded-xl flex flex-col space-y-3">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center text-[10px] font-semibold text-slate-400 gap-2">
+        <span>温度波动审计曲线与物理退化包络线</span>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="flex items-center gap-1">
+            <span className="w-2.5 h-1.5 bg-emerald-500/10 border border-emerald-500/30 border-dashed rounded-sm"></span>
+            安全范围 ({optimalMin}-{optimalMax}°C)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-0.5 bg-cyan-400 rounded-sm"></span>
+            遥测实测值
+          </span>
+          {gapElements.length > 0 && (
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-1.5 bg-cyan-400/10 border border-cyan-400/30 rounded-sm"></span>
+              断流退化区间
+            </span>
+          )}
+        </div>
+      </div>
+      
+      <div className="relative w-full h-[180px] bg-slate-950/20 rounded-lg overflow-hidden border border-slate-900/60">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="optGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#10b981" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="#10b981" stopOpacity="0.02" />
+            </linearGradient>
+            <linearGradient id="gapGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.02" />
+            </linearGradient>
+            <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#22d3ee" />
+              <stop offset="100%" stopColor="#0891b2" />
+            </linearGradient>
+          </defs>
+
+          {/* Grid lines */}
+          {gridLines}
+
+          {/* Optimal range band */}
+          {optYMax >= 0 && optYMin >= 0 && (
+            <rect 
+              x={paddingLeft} 
+              y={optYMax} 
+              width={chartWidth} 
+              height={Math.abs(optYMin - optYMax)} 
+              fill="url(#optGrad)" 
+              stroke="#10b981" 
+              strokeWidth="0.5" 
+              strokeDasharray="3,3"
+              opacity="0.6"
+            />
+          )}
+
+          {/* Telemetry Gap polygons */}
+          {gapElements}
+
+          {/* Temperature Path */}
+          <path 
+            d={linePath} 
+            fill="none" 
+            stroke="url(#lineGrad)" 
+            strokeWidth="2" 
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Individual points */}
+          {displayLogs.map((log, idx) => {
+            const t = log.temp !== undefined ? log.temp : (log.temperature || 0);
+            const x = getX(idx);
+            const y = getY(t);
+            const isExcur = t < optimalMin || t > optimalMax;
+
+            return (
+              <g key={`pt-${idx}`} className="group">
+                <circle 
+                  cx={x} cy={y} 
+                  r={isExcur ? "4" : "3"} 
+                  fill={isExcur ? "#ef4444" : "#06b6d4"} 
+                  stroke={isExcur ? "#fee2e2" : "#ecfeff"} 
+                  strokeWidth="1" 
+                  className="transition-all duration-150 group-hover:r-5 cursor-pointer"
+                />
+                {isExcur && (
+                  <circle 
+                    cx={x} cy={y} 
+                    r="7" 
+                    fill="none" 
+                    stroke="#ef4444" 
+                    strokeWidth="0.5" 
+                    className="animate-ping"
+                  />
+                )}
+                <title>
+                  时间: {new Date(log.time || log.timestamp).toLocaleString([], {hour: '2-digit', minute:'2-digit'})}
+                  {"\n"}温度: {t}°C {isExcur ? '⚠️ 温度超标' : '✅ 正常'}
+                </title>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 function TmsAutopilotPanel({ 
   tmsAudits, 
   activeAuditId, 
@@ -1070,6 +1335,7 @@ function TmsAutopilotPanel({
   const [formCommodity, setFormCommodity] = useState('');
   const [formWeightKg, setFormWeightKg] = useState<number>(180);
   const [formCargoValUsd, setFormCargoValUsd] = useState<number>(95000);
+  const [formPackageCount, setFormPackageCount] = useState<number>(1);
   const [formLimitationClause, setFormLimitationClause] = useState('');
   const [formExemptions, setFormExemptions] = useState('');
   const [formJurisdiction, setFormJurisdiction] = useState('');
@@ -1190,7 +1456,8 @@ function TmsAutopilotPanel({
           weightKg: Number(formWeightKg),
           cargoValUsd: Number(formCargoValUsd),
           userId: userId,
-          tempLogs: logsWithMetadata
+          tempLogs: logsWithMetadata,
+          packageCount: Number(formPackageCount)
         })
       });
       if (res.ok) {
@@ -1202,6 +1469,7 @@ function TmsAutopilotPanel({
         setFormCommodity('');
         setFormWeightKg(180);
         setFormCargoValUsd(95000);
+        setFormPackageCount(1);
         setFormLimitationClause('');
         setFormExemptions('');
         setFormJurisdiction('');
@@ -1388,6 +1656,13 @@ function TmsAutopilotPanel({
                             测定该批次货物 {activeAudit.commodity} 在最高温度达到 <span className="text-amber-400 font-bold">{activeAudit.maxTempSeen}°C</span>，且累计处于温差异常区达 <span className="text-amber-400 font-bold">{activeAudit.excursionDurationHours} 小时</span> 的情况下，发生了 <span className="text-rose-400 font-bold">{activeAudit.degradationRate}%</span> 的活性衰退/生物质变。该结论已达到理赔起诉的安全边界值。
                           </p>
                         </div>
+                        
+                        {/* Newtonian Telemetry Chart */}
+                        <TelemetryChart 
+                          tempLogs={logs} 
+                          commodity={activeAudit.commodity}
+                          uncertaintyIntervals={activeAudit.uncertaintyIntervals}
+                        />
                       </div>
 
                       {hasContractMeta && (
@@ -1602,6 +1877,17 @@ function TmsAutopilotPanel({
                       value={formCargoValUsd || ''}
                       onChange={(e) => setFormCargoValUsd(Number(e.target.value))}
                       placeholder="例如: 95000"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">包裹件数 (Package Count)</label>
+                    <input 
+                      type="number"
+                      value={formPackageCount || ''}
+                      onChange={(e) => setFormPackageCount(Number(e.target.value))}
+                      placeholder="例如: 1"
                       className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 transition-colors"
                     />
                   </div>
