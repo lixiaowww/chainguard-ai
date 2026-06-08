@@ -1,5 +1,5 @@
 ---
-title: ChainGuard AI
+title: ChainGuard AI Enterprise
 emoji: 🛡️
 colorFrom: indigo
 colorTo: blue
