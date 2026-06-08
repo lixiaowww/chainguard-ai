@@ -1,3 +1,12 @@
+---
+title: ChainGuard AI
+emoji: 🛡️
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
 # 🛡️ ChainGuard AI: Perishable Cargo Audit & Compliance Engine
 
 ChainGuard AI is a premium, enterprise-grade cold-chain compliance auditing, dynamic underwriting, and cryptographic verification platform. By merging bio-physical thermodynamics, international maritime/air carriage laws, multi-agent LLM arbitration, and cryptographic auditing, ChainGuard AI ensures trust and mitigates liability across global supply chains.
