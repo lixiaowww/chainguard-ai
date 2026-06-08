@@ -1,5 +1,5 @@
 import fs from "fs";
-import { maskSensitiveData, sanitizeTelemetry, applyOutputGuardrails } from "./server";
+import { maskSensitiveData, sanitizeTelemetry, applyOutputGuardrails } from "./src/lib/HarnessHelper";
 
 interface TestCase {
   name: string;
@@ -311,6 +311,100 @@ test("API Verification: should verify authentic generated PDF and detect tamperi
   assertEquals(tamperedJson.success, true);
   assertEquals(tamperedJson.status, "TAMPERED", "Status should be TAMPERED for modified PDF");
   assertEquals(tamperedJson.pdf_verified, false, "PDF verified flag should be false");
+});
+
+// ==========================================
+// 7. Biophysical & Legal Convention Tests
+// ==========================================
+
+test("API Biophysics & Legal: Bananas Ocean Freight with Telemetry Gap", async () => {
+  const webhookUrl = "http://localhost:8081/v1/tms/webhook";
+  
+  try {
+    const health = await fetch("http://localhost:8081/health");
+    if (health.status !== 200) throw new Error();
+  } catch {
+    console.log("⚠️  Skipping Banana Ocean test: Local FastAPI server is not running on http://localhost:8081");
+    return;
+  }
+
+  const payload = {
+    tms_system: "CargoWise",
+    event_type: "SHIPMENT_DELIVERED",
+    shipment_id: "TEST-BANANA-OCEAN-99",
+    cargo_type: "Organic Sweet Cavendish Bananas",
+    commercial_value_usd: 20000,
+    contract_pdf_path: "contracts/cherries_sla_agreement.pdf",
+    incident_context: "Reefer cooling issues on ship transit",
+    telemetry: [
+      { timestamp: "2026-06-08T08:00:00Z", temperature: 14.0, carrierCustody: true },
+      { timestamp: "2026-06-08T12:00:00Z", temperature: 10.0, carrierCustody: true } // 4-hour gap, below 13°C
+    ],
+    weight_kg: 1000,
+    transport_mode: "Ocean"
+  };
+
+  const res = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  assertEquals(res.status, 200, "Webhook proxy response should be 200");
+  const json = await res.json();
+  assertEquals(json.success, true);
+  
+  const report = json.report;
+  assertEquals(report.damage_assessment.status, "PARTIAL_DAMAGE");
+  
+  const scientific = report.damage_assessment.scientific_reasoning.toLowerCase();
+  assertEquals(scientific.includes("banana"), true, "Reasoning should contain banana");
+  assertEquals(scientific.includes("chilling"), true, "Reasoning should mention chilling injury");
+  assertEquals(scientific.includes("gaps") || scientific.includes("bounds"), true, "Reasoning should mention gaps/bounds");
+});
+
+test("API Biophysics & Legal: mRNA Vaccine Freezing Total Loss & Air Cap", async () => {
+  const webhookUrl = "http://localhost:8081/v1/tms/webhook";
+  
+  try {
+    const health = await fetch("http://localhost:8081/health");
+    if (health.status !== 200) throw new Error();
+  } catch {
+    return;
+  }
+
+  const payload = {
+    tms_system: "CargoWise",
+    event_type: "SHIPMENT_DELIVERED",
+    shipment_id: "TEST-VACCINE-FREEZE-99",
+    cargo_type: "mRNA Vaccine (BioNTech/Pfizer)",
+    commercial_value_usd: 150000,
+    contract_pdf_path: "contracts/pharma_global_transport.pdf",
+    incident_context: "Reefer temperature drop below zero during flight",
+    telemetry: [
+      { timestamp: "2026-06-08T08:00:00Z", temperature: 4.0, carrierCustody: true },
+      { timestamp: "2026-06-08T09:00:00Z", temperature: -1.5, carrierCustody: true } // freezing event
+    ],
+    weight_kg: 100,
+    transport_mode: "Air"
+  };
+
+  const res = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  assertEquals(res.status, 200);
+  const json = await res.json();
+  assertEquals(json.success, true);
+  
+  const report = json.report;
+  assertEquals(report.damage_assessment.status, "TOTAL_LOSS");
+  
+  const scientific = report.damage_assessment.scientific_reasoning.toLowerCase();
+  assertEquals(scientific.includes("freezing"), true, "Reasoning should mention freezing");
+  assertEquals(scientific.includes("vaccine"), true, "Reasoning should mention vaccine");
 });
 
 // ==========================================

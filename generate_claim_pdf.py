@@ -171,7 +171,27 @@ def generate_claim_pdf(payload: dict) -> bytes:
     story.append(Spacer(1, 15))
     
     # 6. Human-in-the-Loop Gateway Verification Signature
-    story.append(Paragraph("4. Claims Auditor Sign-Off & Verification", section_title_style))
+    story.append(Paragraph("4. Overall Liability Cap & Claims Auditor Sign-Off", section_title_style))
+    
+    transport_mode = payload.get("transport_mode", "Air")
+    weight_kg = payload.get("weight_kg", 180.0)
+    
+    # Calculate or get limit_val_usd
+    limit_val = payload.get("limit_val_usd", 0.0)
+    if limit_val == 0.0:
+        SDR_RATE = 1.31
+        if transport_mode == "Air":
+            limit_val = weight_kg * 22.0 * SDR_RATE
+        else:
+            limit_val = weight_kg * 2.0 * SDR_RATE
+            
+    if transport_mode == "Air":
+        convention_text = f"Applied legal convention: <b>Montreal Convention Article 22</b> (cap of 22 SDR/kg @ 1 SDR = $1.31 USD). For cargo weight of {weight_kg:.2f} kg, the liability cap is <b>${limit_val:,.2f} USD</b>."
+    else:
+        convention_text = f"Applied legal convention: <b>Hague-Visby Rules</b> (cap of 2 SDR/kg @ 1 SDR = $1.31 USD). For cargo weight of {weight_kg:.2f} kg, the liability cap is <b>${limit_val:,.2f} USD</b>."
+        
+    story.append(Paragraph(convention_text, body_style))
+    story.append(Spacer(1, 4))
     
     from datetime import datetime
     timestamp_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -205,6 +225,7 @@ def generate_claim_pdf(payload: dict) -> bytes:
     
     # 7. Cryptographic Verification & Audit Seal
     input_seal = payload.get("input_seal", "N/A")
+    anchored_tx_id = payload.get("anchored_tx_id", "Pending timestamp anchor...")
     story.append(Spacer(1, 10))
     story.append(Paragraph("5. Cryptographic Verification & Audit Seal", section_title_style))
     
@@ -214,8 +235,12 @@ def generate_claim_pdf(payload: dict) -> bytes:
             Paragraph(f"<font face='Courier' size='8.5'><b>{input_seal}</b></font>", table_cell_style)
         ],
         [
+            Paragraph("Public TSA Anchor (Tx ID)", table_cell_bold_style),
+            Paragraph(f"<font face='Courier' size='7.5'><b>{anchored_tx_id}</b></font>", table_cell_style)
+        ],
+        [
             Paragraph("Ledger Status", table_cell_bold_style),
-            Paragraph("SECURED (Registered in ChainGuard AI Local Ledger)", table_cell_style)
+            Paragraph("SECURED (Registered in ChainGuard AI Audit Ledger & Anchored)", table_cell_style)
         ],
         [
             Paragraph("Verification Instruction", table_cell_bold_style),

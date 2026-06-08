@@ -262,144 +262,152 @@ async function startServer() {
   // TMS Autopilot Integration Routes (Plan B Prototype)
   // =========================================================================
 
-  app.post("/api/tms/webhook", (req, res) => {
+  app.post("/api/tms/webhook", async (req, res) => {
     const { shipmentId, carrier, commodity, weightKg, cargoValUsd, tempLogs, userId } = req.body;
 
     if (!shipmentId || !commodity || !weightKg || !cargoValUsd || !tempLogs || !Array.isArray(tempLogs)) {
       return res.status(400).json({ error: "Missing required shipment audit fields." });
     }
 
-    // 1. Biophysics Arrhenius approximation calculation
-    let Ea = 80000;
-    let A = 1.2e11;
-    let targetTemp = 5; // °C
-    let hourlyBaseRate = 0.2;
+    try {
+      // Find meta object containing RAG inputs if present
+      const meta = tempLogs.find((l: any) => l.meta === true);
+      const limitationClause = meta ? meta.limitationClause : "";
+      const exemptions = meta ? meta.exemptions : "";
+      const jurisdiction = meta ? meta.jurisdiction : "";
+      const shipperName = meta ? meta.shipperName : "";
+      
+      const incidentContext = meta ? `Shipper: ${shipperName}. Exemptions: ${exemptions}. Jurisdiction: ${jurisdiction}.` : "Normal transit.";
+      
+      // Clean tempLogs to only include data points
+      const cleanTelemetry = tempLogs.filter((l: any) => !l.meta).map((l: any) => ({
+        timestamp: l.time || l.timestamp,
+        temperature: l.temp !== undefined ? l.temp : l.temperature,
+        carrierCustody: l.carrierCustody !== undefined ? l.carrierCustody : l.carrier_custody,
+        durationHours: l.durationHours !== undefined ? l.durationHours : l.duration_hours
+      }));
 
-    if (commodity.toLowerCase().includes('vaccine') || commodity.toLowerCase().includes('pharm') || commodity.toLowerCase().includes('med')) {
-      Ea = 100000;
-      A = 5e14;
-      targetTemp = 4;
-      hourlyBaseRate = 0.5;
-    } else if (commodity.toLowerCase().includes('banana') || commodity.toLowerCase().includes('fruit') || commodity.toLowerCase().includes('produce')) {
-      Ea = 70000;
-      A = 2e9;
-      targetTemp = 13;
-      hourlyBaseRate = 0.3;
-    }
-
-    let degradationRate = 0;
-    let excursionDurationHours = 0;
-    let maxTempSeen = -999;
-    
-    // Check if logs contain duration hours
-    for (const log of tempLogs) {
-      const duration = log.durationHours || 1; // default to 1 hour per log point
-      if (log.temp > maxTempSeen) {
-        maxTempSeen = log.temp;
+      // Determine transport mode based on commodity
+      let transportMode = "Air";
+      if (commodity.toLowerCase().includes("banana") || commodity.toLowerCase().includes("fruit") || commodity.toLowerCase().includes("produce") || commodity.toLowerCase().includes("wine")) {
+        transportMode = "Ocean";
       }
-      if (log.temp > targetTemp) {
-        excursionDurationHours += duration;
-        const deltaT = log.temp - targetTemp;
-        const multiplier = Math.pow(2.2, deltaT / 4);
-        degradationRate += hourlyBaseRate * multiplier * duration;
-      }
-    }
-    degradationRate = Math.min(100, Math.round(degradationRate * 10) / 10);
 
-    // 2. Legal Convention rules (Montreal Convention SDR 22 per kg limit)
-    const SDR_RATE = 1.31;
-    const LIMIT_PER_KG = 22 * SDR_RATE; 
-    const limitValUsd = Math.round(weightKg * LIMIT_PER_KG * 100) / 100;
-
-    // Check if excursion occurred during carrier custody (simulate check)
-    const excursionInCustody = tempLogs.some(log => log.temp > targetTemp && log.carrierCustody === true);
-    
-    // Estimate loss value based on degradation rate
-    const estimatedLossUsd = Math.round(cargoValUsd * (degradationRate / 100) * 100) / 100;
-    const liableClaimUsd = excursionInCustody ? Math.min(estimatedLossUsd, limitValUsd) : 0;
-
-    // Calculate Liability Score
-    let liabilityScore = 0;
-    if (degradationRate > 0) {
-      if (excursionInCustody) {
-        liabilityScore += 50; // In custody excursion is primary liability
-        // Scale remaining based on degradation
-        liabilityScore += Math.round((degradationRate / 100) * 40);
-        // Add duration flag
-        if (excursionDurationHours > 6) {
-          liabilityScore += 10;
-        }
-      } else {
-        // Excursion happened, but carrier claims it was before or after custody (e.g. shipper precooling failure)
-        liabilityScore += Math.round((degradationRate / 100) * 15);
-      }
-    }
-    liabilityScore = Math.min(100, liabilityScore);
-
-    // Determine status
-    let claimStatus: 'CLEAR' | 'WARNING' | 'CLAIM_PENDING' = 'CLEAR';
-    if (degradationRate > 15 && degradationRate < 40) {
-      claimStatus = 'WARNING';
-    } else if (degradationRate >= 40) {
-      claimStatus = 'CLAIM_PENDING';
-    }
-
-    const auditResult = {
-      id: "audit-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
-      shipmentId,
-      carrier,
-      commodity,
-      weightKg,
-      cargoValUsd,
-      limitValUsd,
-      degradationRate,
-      excursionDurationHours,
-      maxTempSeen,
-      excursionInCustody,
-      estimatedLossUsd,
-      liableClaimUsd,
-      liabilityScore,
-      claimStatus,
-      tempLogs,
-      created_at: new Date().toISOString()
-    };
-
-    tmsAudits.unshift(auditResult); // Prepend new audit
-
-    // Limit to 50 items in memory
-    if (tmsAudits.length > 50) {
-      tmsAudits.pop();
-    }
-
-    // Persist to Supabase if userId is provided
-    if (userId && supabase) {
-      supabase.from('tms_shipments').insert({
-        user_id: userId,
-        shipment_id: shipmentId,
-        carrier: carrier,
-        commodity: commodity,
-        weight_kg: weightKg,
-        cargo_val_usd: cargoValUsd,
-        limit_val_usd: limitValUsd,
-        degradation_rate: degradationRate,
-        excursion_duration_hours: excursionDurationHours,
-        max_temp_seen: maxTempSeen,
-        excursion_in_custody: excursionInCustody,
-        estimated_loss_usd: estimatedLossUsd,
-        liable_claim_usd: liableClaimUsd,
-        liability_score: liabilityScore,
-        claim_status: claimStatus,
-        temp_logs: tempLogs
-      }).then(({ error }) => {
-        if (error) {
-          console.error("Supabase persistence failed for shipment:", shipmentId, error);
-        } else {
-          console.log("Supabase persistence successful for shipment:", shipmentId);
-        }
+      // Proxy to Python FastAPI backend
+      const response = await fetch("http://localhost:8081/v1/tms/webhook", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          tms_system: "CargoWise",
+          event_type: "SHIPMENT_DELIVERED",
+          shipment_id: shipmentId,
+          cargo_type: commodity,
+          commercial_value_usd: Number(cargoValUsd),
+          contract_pdf_path: commodity.toLowerCase().includes("vaccine") || commodity.toLowerCase().includes("pharm") 
+            ? "contracts/pharma_global_transport.pdf" 
+            : (commodity.toLowerCase().includes("wine") ? "contracts/wine_logistics_spec.pdf" : "contracts/cherries_sla_agreement.pdf"),
+          incident_context: incidentContext,
+          telemetry: cleanTelemetry,
+          weight_kg: Number(weightKg),
+          transport_mode: transportMode
+        })
       });
-    }
 
-    res.json({ success: true, audit: auditResult });
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("FastAPI webhook proxy failed:", errText);
+        return res.status(500).json({ error: `FastAPI backend failed: ${errText}` });
+      }
+
+      const resData: any = await response.json();
+      const report = resData.report || {};
+      const damage = report.damage_assessment || {};
+      const liability = report.liability_assignment || {};
+
+      // Calculate auxiliary metrics
+      const SDR_RATE = 1.31;
+      const limitValUsd = transportMode === "Air" 
+        ? Math.round(Number(weightKg) * 22 * SDR_RATE * 100) / 100
+        : Math.round(Number(weightKg) * 2 * SDR_RATE * 100) / 100;
+        
+      const estimatedLossUsd = damage.estimated_loss_usd || 0;
+      const excursionInCustody = liability.liable_party === "Carrier" || liability.fault_percentage > 0;
+      const liableClaimUsd = excursionInCustody ? Math.min(estimatedLossUsd, limitValUsd) : 0;
+      
+      const matchHours = damage.scientific_reasoning?.match(/for (\d+(?:\.\d+)?) hours/);
+      const excursionDurationHours = matchHours ? parseFloat(matchHours[1]) : 0;
+      
+      let degradationRate = 0;
+      if (damage.status === "TOTAL_LOSS") {
+        degradationRate = 100;
+      } else {
+        const matchPct = damage.scientific_reasoning?.match(/(\d+(?:\.\d+)?)%/);
+        degradationRate = matchPct ? parseFloat(matchPct[1]) : 0;
+      }
+
+      const claimStatus = damage.status === "TOTAL_LOSS" ? "CLAIM_PENDING" : (damage.status === "PARTIAL_DAMAGE" ? "WARNING" : "CLEAR");
+
+      const auditResult = {
+        id: resData.event_id || "audit-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
+        shipmentId,
+        carrier,
+        commodity,
+        weightKg: Number(weightKg),
+        cargoValUsd: Number(cargoValUsd),
+        limitValUsd,
+        degradationRate,
+        excursionDurationHours,
+        maxTempSeen: cleanTelemetry.reduce((max: number, pt: any) => pt.temperature > max ? pt.temperature : max, -999),
+        excursionInCustody,
+        estimatedLossUsd,
+        liableClaimUsd,
+        liabilityScore: liability.fault_percentage || 0,
+        claimStatus: claimStatus as 'CLEAR' | 'WARNING' | 'CLAIM_PENDING',
+        tempLogs,
+        created_at: new Date().toISOString()
+      };
+
+      tmsAudits.unshift(auditResult);
+
+      if (tmsAudits.length > 50) {
+        tmsAudits.pop();
+      }
+
+      // Persist to Supabase if userId is provided
+      if (userId && supabase) {
+        supabase.from('tms_shipments').insert({
+          user_id: userId,
+          shipment_id: shipmentId,
+          carrier: carrier,
+          commodity: commodity,
+          weight_kg: Number(weightKg),
+          cargo_val_usd: Number(cargoValUsd),
+          limit_val_usd: limitValUsd,
+          degradation_rate: degradationRate,
+          excursion_duration_hours: excursionDurationHours,
+          max_temp_seen: auditResult.maxTempSeen,
+          excursion_in_custody: excursionInCustody,
+          estimated_loss_usd: estimatedLossUsd,
+          liable_claim_usd: liableClaimUsd,
+          liability_score: auditResult.liabilityScore,
+          claim_status: claimStatus,
+          temp_logs: tempLogs
+        }).then(({ error }) => {
+          if (error) {
+            console.error("Supabase persistence failed for shipment:", shipmentId, error);
+          } else {
+            console.log("Supabase persistence successful for shipment:", shipmentId);
+          }
+        });
+      }
+
+      res.json({ success: true, audit: auditResult });
+    } catch (err: any) {
+      console.error("Failed to proxy TMS webhook:", err);
+      res.status(500).json({ error: err.message || "Internal server error proxying TMS webhook" });
+    }
   });
 
   app.get("/api/tms/audits", async (req, res) => {

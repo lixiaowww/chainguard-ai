@@ -1,8 +1,30 @@
+# Node dependencies & builds
 node_modules/
 build/
 dist/
 coverage/
 .DS_Store
 *.log
+
+# Environment files and secrets
 .env*
 !.env.example
+
+# Python virtual environment and cache
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Local SQLite databases
+chainguard.db
+chainguard.db-journal
+
+# Runtime generated documents
+tms_claims/
+contracts/uploaded_*
+verified_cases/
+
+# IDE files
+.idea/
+.vscode/
