@@ -1,11 +1,10 @@
 ---
-title: ChainGuard AI Enterprise
-emoji: 🛡️
-colorFrom: indigo
-colorTo: blue
-sdk: docker
+title: "ChainGuard AI"
+sdk: "docker"
 app_port: 7860
-pinned: false
+emoji: "🛡️"
+colorFrom: "indigo"
+colorTo: blue
 ---
 
 # 🛡️ ChainGuard AI: Perishable Cargo Audit & Compliance Engine
