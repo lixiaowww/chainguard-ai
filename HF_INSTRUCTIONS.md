@@ -15,10 +15,11 @@ Go to **Settings** -> **Variables and secrets** in your Space and add the follow
 
 | Name | Type | Value |
 | :--- | :--- | :--- |
-| `GEMINI_API_KEY` | Secret | Your Google Gemini API Key |
+| `DEEPSEEK_API_KEY` | Secret | Your DeepSeek API Key (Primary) |
+| `GEMINI_API_KEY` | Secret | Your Google Gemini API Key (Fallback) |
 | `VITE_SUPABASE_URL` | Variable | Your Supabase Project URL |
 | `VITE_SUPABASE_ANON_KEY` | Secret | Your Supabase Anon Key |
-| `DATABASE_URL` | Secret | Your Supabase PostgreSQL Connection String (e.g., `postgresql://postgres:[password]@db.[id].supabase.co:5432/postgres`) |
+| `DATABASE_URL` | Secret | Your Supabase PostgreSQL Connection String |
 
 ### 3. Upload Files
 You can use the Hugging Face web interface or `git` to upload all files in the `chainguard-ai` directory to your Space repository.

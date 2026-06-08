@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 import dotenv from "dotenv";
 import { ValidationService } from "./src/lib/ValidationService";
 import { createClient } from "@supabase/supabase-js";
@@ -108,21 +108,17 @@ async function startServer() {
     next();
   });
 
-  const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY || "DUMMY_KEY",
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      }
-    }
+  const openai = new OpenAI({
+    apiKey: process.env.DEEPSEEK_API_KEY || process.env.GEMINI_API_KEY || "DUMMY_KEY",
+    baseURL: process.env.DEEPSEEK_API_KEY ? "https://api.deepseek.com" : undefined
   });
 
   // API route for market analysis
   app.post("/api/analyze", async (req, res) => {
-    let { inputText, competitors, isBrutal, model = "gemini-3.5-flash", enableSearch = true, githubUrl, isCuriosityEnabled = false } = req.body;
+    let { inputText, competitors, isBrutal, model = "deepseek-chat", enableSearch = false, githubUrl, isCuriosityEnabled = false } = req.body;
 
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: "Gemini API key is not configured on the server." });
+    if (!process.env.DEEPSEEK_API_KEY && !process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: "DeepSeek or Gemini API key is not configured on the server." });
     }
 
     try {
@@ -145,54 +141,26 @@ async function startServer() {
 
       const fullPrompt = `${SYSTEM_INSTRUCTION}\n\n模式: ${isBrutal ? '【残酷审计模式】' : '【标准模式】'}\n好奇心策略: ${curiosityInstruction}\n\n研究领域/初步设想: ${inputText}\n\n已知竞品: ${competitors}\n\n任务：${isCuriosityEnabled ? '最大化寻找“未被问的问题”和“关键不确定性”。' : '不要落入“讨论热度”偏差。'}挖掘“哪里痛且值得做”，并输出符合前瞻性的产品报告。`;
 
-      const params: any = {
-        model: model,
-        contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
-        config: {
-          temperature: isBrutal ? 0.9 : 0.7,
-        }
-      };
-
-      if (enableSearch) {
-        params.config.tools = [{ googleSearch: {} }];
-      }
-
-      let responseStream;
-      let retries = 3;
-      let delay = 1000;
-
-      while (retries >= 0) {
-        try {
-          responseStream = await ai.models.generateContentStream(params);
-          break;
-        } catch (error: any) {
-          if (retries > 0 && (error.status === 429 || error.status === 503)) {
-            console.warn(`API Error (status ${error.status}), retrying in ${delay}ms... (${retries} retries left)`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-            retries--;
-            delay *= 2;
-          } else {
-            throw error;
-          }
-        }
-      }
-      
-      if (!responseStream) throw new Error("Could not connect to AI service after retries.");
-
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
       res.setHeader('Transfer-Encoding', 'chunked');
 
-      for await (const chunk of responseStream) {
-        if (chunk.text) {
-          res.write(chunk.text);
+      const stream = await openai.chat.completions.create({
+        model: process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "gemini-1.5-flash",
+        messages: [{ role: "user", content: fullPrompt }],
+        temperature: isBrutal ? 0.9 : 0.7,
+        stream: true,
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || "";
+        if (content) {
+          res.write(content);
         }
       }
       res.end();
     } catch (error: any) {
-      console.error("Gemini Error:", error);
+      console.error("AI Error:", error);
       if (!res.headersSent) {
-        res.removeHeader('Content-Type');
-        res.removeHeader('Transfer-Encoding');
         res.status(500).json({ error: error.message || "An error occurred during analysis." });
       } else {
         res.write(`\n\n[Server Error: ${error.message || "Model experienced an error mid-stream. Please try again."}]`);
@@ -205,8 +173,8 @@ async function startServer() {
   app.post("/api/radar/scan", async (req, res) => {
     const { watchAreaId, keywords, tags } = req.body;
 
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: "Gemini API key is not configured on the server." });
+    if (!process.env.DEEPSEEK_API_KEY && !process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: "DeepSeek or Gemini API key is not configured on the server." });
     }
 
     if (!keywords || typeof keywords !== 'string') {
@@ -214,7 +182,7 @@ async function startServer() {
     }
 
     try {
-      const radarPrompt = `你是一个顶级全网需求洞察与痛点侦察专家。你的任务是针对关键词："${keywords}" 执行联网搜索，扫描相关的 Reddit, X, Discord 社区帖子和讨论，询问并挖掘其中反映高频痛点或临时 Workaround 方案的用户抱怨，并整理出最多 3 个具有高商业潜力的需求痛点。
+      const radarPrompt = `你是一个顶级全网需求洞察与痛点侦察专家。你的任务是针对关键词："${keywords}" 执行搜索并挖掘其中反映高频痛点或临时 Workaround 方案的用户抱怨，并整理出最多 3 个具有高商业潜力的需求痛点。
 
 检索与打分指标说明：
 - 检索重点：聚焦带有“Willingness to Pay (付费意愿)”、“极度耗时繁琐”、“导出 Excel 依赖”等强烈信号的真实用户反馈。
@@ -224,26 +192,22 @@ async function startServer() {
 [
   {
     "title": "简明扼要的痛点标题（如：律师合同审核繁琐）",
-    "description": "详细描述该痛点的背景、破坏的用户工作流，以及用户面临的麻烦",
-    "source_url": "检索到的具体参考网址（如 Reddit 帖子 URL，若无则使用 'https://reddit.com'）",
+    "description": "详细描述该痛点的背景、破坏的工作流，以及用户面临的麻烦",
+    "source_url": "参考网址（如 Reddit 帖子 URL，若无则使用 'https://reddit.com'）",
     "raw_evidence": "用户的原始吐槽原话或证据摘要（如：'每天都要手动核对 10 个 PDF...'）",
     "pain_score": 75,
     "potential_solution": "AI 建议的产品或 SaaS 方案切入点"
   }
 ]`;
 
-      const params: any = {
-        model: "gemini-3.5-flash",
-        contents: [{ role: 'user', parts: [{ text: radarPrompt }] }],
-        config: {
-          temperature: 0.5,
-          responseMimeType: "application/json",
-          tools: [{ googleSearch: {} }] // 开启联网搜索
-        }
-      };
+      const response = await openai.chat.completions.create({
+        model: process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "gemini-1.5-flash",
+        messages: [{ role: "user", content: radarPrompt }],
+        temperature: 0.5,
+        response_format: { type: "json_object" }
+      });
 
-      const response = await ai.models.generateContent(params);
-      const text = response.text;
+      const text = response.choices[0]?.message?.content;
 
       if (!text) {
         throw new Error("Empty response from AI service.");
@@ -251,7 +215,7 @@ async function startServer() {
 
       // 验证并解析 JSON 格式
       const parsed = JSON.parse(text);
-      res.json(parsed);
+      res.json(Array.isArray(parsed) ? parsed : (parsed.pains || []));
     } catch (error: any) {
       console.error("Radar Scan Error:", error);
       res.status(500).json({ error: error.message || "An error occurred during radar scan." });
@@ -485,38 +449,18 @@ Required JSON Structure:
   "jurisdiction": "Governing law or court for disputes"
 }
 
-Return ONLY this JSON object. Do not include markdown code block formatting or extra text.`;
+Return ONLY this JSON object.`;
 
-      const contents = [
-        {
-          role: 'user',
-          parts: [
-            {
-              inlineData: {
-                data: fileBase64,
-                mimeType: mimeType
-              }
-            },
-            {
-              text: prompt
-            }
-          ]
-        }
-      ];
-
-      // Call Gemini 3.5 Flash
-      const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
-        contents: contents,
-        config: {
-          temperature: 0.1,
-          responseMimeType: "application/json"
-        }
+      const response = await openai.chat.completions.create({
+        model: process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "gemini-1.5-flash",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.1,
+        response_format: { type: "json_object" }
       });
 
-      const text = response.text;
+      const text = response.choices[0]?.message?.content;
       if (!text) {
-        throw new Error("Empty response from Gemini document model.");
+        throw new Error("Empty response from AI document model.");
       }
 
       const parsed = JSON.parse(text);
@@ -605,17 +549,14 @@ Return ONLY this JSON object. Do not include markdown code block formatting or e
 报告内容如下：
 ${reportText}`;
 
-      const params: any = {
-        model: "gemini-3.5-flash",
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-          temperature: 0.1,
-          responseMimeType: "application/json"
-        }
-      };
+      const response = await openai.chat.completions.create({
+        model: process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "gemini-1.5-flash",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.1,
+        response_format: { type: "json_object" }
+      });
 
-      const response = await ai.models.generateContent(params);
-      const text = response.text;
+      const text = response.choices[0]?.message?.content;
       if (!text) {
         throw new Error("Empty response from AI service.");
       }

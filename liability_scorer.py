@@ -1,8 +1,7 @@
 import os
 import sys
 import json
-from google import genai
-from google.genai import types
+from openai import OpenAI
 from crewai import LLM, Agent, Task, Crew
 
 class LiabilityScorer:
@@ -42,9 +41,15 @@ class LiabilityScorer:
             return self._run_live_debate()
 
     def _get_llm(self):
+        if os.environ.get("DEEPSEEK_API_KEY"):
+            return LLM(
+                model="openai/deepseek-chat",
+                base_url="https://api.deepseek.com",
+                api_key=os.environ.get("DEEPSEEK_API_KEY")
+            )
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("GEMINI_API_KEY environment variable is missing. Please set it.")
+            raise ValueError("Neither DEEPSEEK_API_KEY nor GEMINI_API_KEY environment variable is found.")
         return LLM(model="gemini/gemini-1.5-flash", api_key=api_key)
 
     def _run_live_debate(self):
@@ -208,10 +213,7 @@ class LiabilityScorer:
         
         crew.kickoff()
         
-        # Compile final JSON structure using Gemini
-        api_key = os.environ.get("GEMINI_API_KEY")
-        client = genai.Client(api_key=api_key)
-        
+        # Compile final JSON structure using AI
         synthesis_prompt = f"""
         You are the Core Intelligence compiler. Based on the reports produced by the agents in their debate cycle, extract and format the data into a perfect JSON document matching the required schema.
 
@@ -249,16 +251,30 @@ class LiabilityScorer:
         {task_dispatch.output.raw}
         """
         
-        response = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=synthesis_prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json"
+        if os.environ.get("DEEPSEEK_API_KEY"):
+            client = OpenAI(api_key=os.environ.get("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
+            response = client.chat.completions.create(
+                model="deepseek-chat",
+                messages=[{"role": "user", "content": synthesis_prompt}],
+                response_format={"type": "json_object"}
             )
-        )
+            content = response.choices[0].message.content
+        else:
+            from google import genai
+            from google.genai import types
+            api_key = os.environ.get("GEMINI_API_KEY")
+            client = genai.Client(api_key=api_key)
+            response = client.models.generate_content(
+                model="gemini-1.5-flash",
+                contents=synthesis_prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json"
+                )
+            )
+            content = response.text
         
         try:
-            final_report = json.loads(response.text.strip())
+            final_report = json.loads(content.strip())
         except Exception as e:
             print(f"Error compiling final JSON: {e}", file=sys.stderr)
             # Safe fallback structure

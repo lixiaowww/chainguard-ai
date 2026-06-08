@@ -2,16 +2,21 @@ import os
 import sys
 import json
 import argparse
-from google import genai
-from google.genai import types
+from openai import OpenAI
 from langchain_community.document_loaders import PyPDFLoader
 from crewai import LLM, Agent, Task, Crew
 from liability_scorer import LiabilityScorer
 
 def get_llm():
+    if os.environ.get("DEEPSEEK_API_KEY"):
+        return LLM(
+            model="openai/deepseek-chat",
+            base_url="https://api.deepseek.com",
+            api_key=os.environ.get("DEEPSEEK_API_KEY")
+        )
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        raise ValueError("GEMINI_API_KEY environment variable is missing. Please set it.")
+        raise ValueError("Neither DEEPSEEK_API_KEY nor GEMINI_API_KEY environment variable is found.")
     return LLM(model="gemini/gemini-1.5-flash", api_key=api_key)
 
 def load_and_extract_contract_terms(pdf_path, mock=False):
@@ -87,13 +92,7 @@ Section 4.5 - Liability Limits: Liability capped at $50,000 USD maximum per ship
     docs = loader.load()
     full_text = "\n".join([doc.page_content for doc in docs])
     
-    # Extract terms using Gemini API
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY environment variable is missing for LangChain contract extraction.")
-        
-    client = genai.Client(api_key=api_key)
-    
+    # Extract terms using AI API
     prompt = f"""
     You are an expert contract parser. Analyze the following contract text and extract specific terms related to cold chain cargo carriage:
     1. Deductible (免赔额): Look for deductible amounts or clauses.
@@ -106,29 +105,34 @@ Section 4.5 - Liability Limits: Liability capped at $50,000 USD maximum per ship
     {full_text}
     """
     
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=types.Schema(
-                type=types.Type.OBJECT,
-                properties={
-                    "deductible": types.Schema(type=types.Type.STRING),
-                    "exclusions": types.Schema(type=types.Type.STRING),
-                    "liability_limits": types.Schema(type=types.Type.STRING),
-                },
-                required=["deductible", "exclusions", "liability_limits"]
+    if os.environ.get("DEEPSEEK_API_KEY"):
+        client = OpenAI(api_key=os.environ.get("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
+        response = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        content = response.choices[0].message.content
+    else:
+        from google import genai
+        from google.genai import types
+        api_key = os.environ.get("GEMINI_API_KEY")
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json"
             )
         )
-    )
+        content = response.text
     
     try:
-        terms = json.loads(response.text.strip())
+        terms = json.loads(content.strip())
         terms["raw_contract_text"] = full_text
         return terms
     except Exception as e:
-        print(f"Error parsing Gemini response JSON: {e}. Raw response: {response.text}", file=sys.stderr)
+        print(f"Error parsing AI response JSON: {e}. Raw response: {content}", file=sys.stderr)
         # Fallback keyword parsing in case of failures
         return {
             "deductible": "Not clearly defined (Parsed text fallback)",
