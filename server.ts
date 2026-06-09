@@ -66,20 +66,9 @@ async function startServer() {
 
   app.use(express.json());
 
-  // CORS 配置中间件，确保仅允许信任的来源访问 API 接口
+  // CORS 配置中间件，放开限制以适配 Hugging Face 域名
   app.use((req, res, next) => {
-    const allowedOrigins = [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "https://app.chainguard.ai"
-    ];
-    const origin = req.headers.origin;
-    if (origin && allowedOrigins.includes(origin)) {
-      res.setHeader("Access-Control-Allow-Origin", origin);
-    } else if (!origin) {
-      // 允许非浏览器端（如本地脚本测试）在不带 Origin 头时直接访问
-      res.setHeader("Access-Control-Allow-Origin", "*");
-    }
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.setHeader("Access-Control-Allow-Credentials", "true");

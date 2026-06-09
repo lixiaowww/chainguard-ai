@@ -1462,6 +1462,7 @@ function TmsAutopilotPanel({
   };
 
   const handleSimulate = async () => {
+    setIsTmsLoading(true);
     try {
       const res = await fetch('/api/tms/webhook', {
         method: 'POST',
@@ -1481,10 +1482,16 @@ function TmsAutopilotPanel({
         })
       });
       if (res.ok) {
+        alert('模拟运单 Webhook 已发送成功！正在刷新列表...');
         onRefresh();
+      } else {
+        const err = await res.json();
+        alert('模拟失败：' + (err.error || '未知错误'));
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      alert('网络请求失败：' + e.message);
+    } finally {
+      setIsTmsLoading(false);
     }
   };
 
