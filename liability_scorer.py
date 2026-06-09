@@ -43,7 +43,7 @@ class LiabilityScorer:
     def _get_llm(self):
         if os.environ.get("DEEPSEEK_API_KEY"):
             return LLM(
-                model="openai/deepseek-chat",
+                model="deepseek/deepseek-chat",
                 base_url="https://api.deepseek.com",
                 api_key=os.environ.get("DEEPSEEK_API_KEY")
             )
