@@ -21,8 +21,15 @@ import {
   Printer,
   Thermometer,
   Droplets,
-  Zap
+  Zap,
+  Mail,
+  Lock,
+  Loader2,
+  LogOut,
+  UserCircle
 } from "lucide-react";
+import { cn } from './lib/utils';
+import { supabase } from './lib/supabase';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -38,7 +45,84 @@ import {
 import { ShipmentData, TelemetryPoint, AnalysisReport, Contract, Message } from "./types";
 import { SCENARIOS } from "./scenariosData";
 
+function LoginView({ onLogin }: { onLogin: () => void }) {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError(null);
+    const { error } = isSignUp 
+      ? await supabase.auth.signUp({ email, password })
+      : await supabase.auth.signInWithPassword({ email, password });
+    if (error) setAuthError(error.message);
+    else onLogin();
+    setAuthLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-none shadow-[4px_4px_0px_rgba(20,20,20,1)] p-8">
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-12 h-12 bg-red-650 rounded-none flex items-center justify-center text-white font-bold mb-4 shadow-[2px_2px_0px_rgba(20,20,20,1)]">
+            <ShieldCheck className="h-8 w-8" />
+          </div>
+          <h1 className="text-2xl font-bold text-white tracking-tight font-mono uppercase">ChainGuard <span className="text-red-500">AI</span></h1>
+          <p className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest mt-2">{isSignUp ? 'Create your Audit account' : 'Access Secure Audit Terminal'}</p>
+        </div>
+        <form onSubmit={handleAuth} className="space-y-4 font-mono">
+          <div>
+            <label className="block text-[9px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Email Address</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full bg-zinc-950 border border-zinc-800 rounded-none py-2.5 pl-10 pr-4 text-xs text-white focus:ring-1 focus:ring-red-650 outline-none" placeholder="auditor@chainguard.ai" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[9px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full bg-zinc-950 border border-zinc-800 rounded-none py-2.5 pl-10 pr-4 text-xs text-white focus:ring-1 focus:ring-red-650 outline-none" placeholder="••••••••" />
+            </div>
+          </div>
+          {authError && <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-none text-[10px] text-red-400">{authError}</div>}
+          <button type="submit" disabled={authLoading} className="w-full bg-red-750 hover:bg-red-650 text-white font-bold py-2.5 rounded-none transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 uppercase text-xs tracking-widest shadow-[2px_2px_0px_rgba(20,20,20,1)]">
+            {authLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (isSignUp ? 'Register Account' : 'Initialize Session')}
+          </button>
+        </form>
+        <div className="mt-6 text-center">
+          <button onClick={() => setIsSignUp(!isSignUp)} className="text-[10px] font-mono text-zinc-500 hover:text-red-500 transition-colors uppercase tracking-tight">
+            {isSignUp ? 'Already registered? Sign In' : "No access? Request Audit Account"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  const [session, setSession] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   const [selectedScenarioKey, setSelectedScenarioKey] = useState<string>("cherries_customs_delay");
   
   // Editable form states
@@ -977,6 +1061,19 @@ fetch(url, {
 
   const { alerts: telemetryAlerts, tempMin, tempMax, maxShock } = getTelemetryAlerts();
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center font-mono">
+        <Loader2 className="h-8 w-8 text-red-650 animate-spin" />
+        <span className="ml-4 text-zinc-500 uppercase tracking-widest text-[10px] font-bold">Establishing Secure Link...</span>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <LoginView onLogin={() => {}} />;
+  }
+
   return (
     <div id="chainguard-app" className="min-h-screen bg-hd-bg text-hd-ink flex flex-col font-sans selection:bg-hd-ink selection:text-white p-4">
       
@@ -1013,18 +1110,33 @@ fetch(url, {
               <button
                 onClick={() => setShowAssistant(!showAssistant)}
                 id="btn-toggle-assistant"
-                className={`px-2 py-1 transition cursor-pointer flex items-center gap-1 ${
-                  showAssistant ? "bg-hd-ink text-white" : "bg-white text-hd-ink hover:bg-zinc-150"
+                className={`px-2 py-1 transition cursor-pointer flex items-center gap-1 border-r border-hd-line last:border-r-0 ${
+                  showAssistant ? "bg-amber-650 text-white" : "bg-white text-hd-ink hover:bg-zinc-150"
                 }`}
                 title="Toggle Gemini AI Assistant chat"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Show Assistant</span>
+                <span>Assistant</span>
               </button>
             </div>
+            
+            <div className="flex items-center gap-3 ml-4 bg-zinc-100 p-1 border border-hd-line font-mono text-[9px] font-bold uppercase">
+              <div className="flex items-center gap-1.5 px-2">
+                <UserCircle className="h-3.5 w-3.5 text-zinc-500" />
+                <span className="text-zinc-600">{session.user.email}</span>
+              </div>
+              <button 
+                onClick={handleLogout}
+                className="bg-zinc-800 text-white px-2 py-1 hover:bg-red-750 transition-colors cursor-pointer border-l border-hd-line"
+                title="Terminate Session"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
 
-            <div className="flex items-center gap-2">
-              <span className="inline-block relative flex h-2.5 w-2.5">
+          <div className="flex items-center gap-2">
+            <span className="inline-block relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600"></span>
               </span>
