@@ -5,6 +5,10 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///chainguard.db")
 
+# Standardize connection string for SQLAlchemy + Psycopg2
+if DATABASE_URL.startswith("postgresql://") and "pgbouncer=true" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace("pgbouncer=true", "").replace("??", "?").rstrip("?")
+
 engine = create_engine(
     DATABASE_URL, connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 )
