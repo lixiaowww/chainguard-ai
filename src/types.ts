@@ -35,6 +35,7 @@ export interface AnalysisReport {
     deductible: string;
     exclusions: string;
     liability_limits: string;
+    raw_contract_text?: string;
   };
   assessor_output?: string;
   legal_output?: string;
