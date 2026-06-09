@@ -1,0 +1,230 @@
+[
+  {
+    "event_id": "EV-1780694752-TEST-TMS-9",
+    "tms_system": "CargoWise",
+    "event_type": "SHIPMENT_DELIVERED",
+    "shipment_id": "TEST-TMS-9999",
+    "cargo_type": "Organic Sweet Rainier Cherries",
+    "commercial_value_usd": 85000.0,
+    "received_at": "2026-06-05T16:25:52.108307Z",
+    "status": "Completed",
+    "extracted_terms": {
+      "deductible": "Deductible: $5,000 USD per shipment event.",
+      "exclusions": "The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.",
+      "liability_limits": "Maximum liability capped at 60% of commercial value of the damaged perishable goods.",
+      "raw_contract_text": "COLD CHAIN CARRIAGE SLA AGREEMENT (CHERRIES)\n\n1. INTRODUCTION & DEFINITIONS\nThis agreement governs the cold chain transport requirements for fresh cherry shipments.\n\n2. FINANCIAL LIABILITY RULES\nClause 2.1 - Deductible: $5,000 USD per shipment event. This deductible applies to all claims.\n\n3. LIABILITY EXCLUSIONS\nClause 3.4 - Exclusions: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\n\n4. OVERALL LIABILITY CAP\nClause 4.2 - Liability Limits: Maximum liability capped at 60% of commercial value of the damaged perishable goods."
+    },
+    "report": {
+      "incident_summary": "Cold chain integrity breach occurred for Shipment TEST-TMS-9999 containing Organic Sweet Rainier Cherries.",
+      "damage_assessment": {
+        "status": "NORMAL",
+        "estimated_loss_usd": 0.0,
+        "scientific_reasoning": "No critical threshold violation observed."
+      },
+      "liability_assignment": {
+        "liable_party": "None",
+        "fault_percentage": 0,
+        "evidence_citation": "Telemetry within normal parameters."
+      },
+      "action_items": [
+        "Isolate affected crates for inspection.",
+        "File formal notice of claim with carrier within contract SLA deadline.",
+        "Verify reefer power status and check for physical seal tampering."
+      ]
+    },
+    "assessor_output": "Cargo Damage Assessor Report:\nIntegrated telemetry analysis reveals cargo is in a state of NORMAL.\nLoss calculated: $0.00 USD.\nReasoning: No critical threshold violation observed.",
+    "legal_output": "Liability Legal Officer Report:\nLiability determined: None is 0% liable.\nContractual check: Deductible applied. Exclusions checked: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\nEvidence: Telemetry within normal parameters.",
+    "dispatcher_output": "Emergency Dispatcher Report:\nAction items formulated:\n1. Move cargo to cold storage immediately.\n2. Reject shipment if TOTAL_LOSS.\n3. File insurance claim specifying code SHELF_LIFE_Arrhenius_3.5.",
+    "pdf_path": "tms_claims/claim_report_TEST-TMS-9999.pdf"
+  },
+  {
+    "event_id": "EV-1780692569-TEST-TMS-9",
+    "tms_system": "CargoWise",
+    "event_type": "SHIPMENT_DELIVERED",
+    "shipment_id": "TEST-TMS-9999",
+    "cargo_type": "Organic Sweet Rainier Cherries",
+    "commercial_value_usd": 85000.0,
+    "received_at": "2026-06-05T15:49:29.969574Z",
+    "status": "Completed",
+    "extracted_terms": {
+      "deductible": "Deductible: $5,000 USD per shipment event.",
+      "exclusions": "The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.",
+      "liability_limits": "Maximum liability capped at 60% of commercial value of the damaged perishable goods.",
+      "raw_contract_text": "COLD CHAIN CARRIAGE SLA AGREEMENT (CHERRIES)\n\n1. INTRODUCTION & DEFINITIONS\nThis agreement governs the cold chain transport requirements for fresh cherry shipments.\n\n2. FINANCIAL LIABILITY RULES\nClause 2.1 - Deductible: $5,000 USD per shipment event. This deductible applies to all claims.\n\n3. LIABILITY EXCLUSIONS\nClause 3.4 - Exclusions: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\n\n4. OVERALL LIABILITY CAP\nClause 4.2 - Liability Limits: Maximum liability capped at 60% of commercial value of the damaged perishable goods."
+    },
+    "report": {
+      "incident_summary": "Cold chain integrity breach occurred for Shipment TEST-TMS-9999 containing Organic Sweet Rainier Cherries.",
+      "damage_assessment": {
+        "status": "NORMAL",
+        "estimated_loss_usd": 0.0,
+        "scientific_reasoning": "No critical threshold violation observed."
+      },
+      "liability_assignment": {
+        "liable_party": "None",
+        "fault_percentage": 0,
+        "evidence_citation": "Telemetry within normal parameters."
+      },
+      "action_items": [
+        "Isolate affected crates for inspection.",
+        "File formal notice of claim with carrier within contract SLA deadline.",
+        "Verify reefer power status and check for physical seal tampering."
+      ]
+    },
+    "assessor_output": "Cargo Damage Assessor Report:\nIntegrated telemetry analysis reveals cargo is in a state of NORMAL.\nLoss calculated: $0.00 USD.\nReasoning: No critical threshold violation observed.",
+    "legal_output": "Liability Legal Officer Report:\nLiability determined: None is 0% liable.\nContractual check: Deductible applied. Exclusions checked: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\nEvidence: Telemetry within normal parameters.",
+    "dispatcher_output": "Emergency Dispatcher Report:\nAction items formulated:\n1. Move cargo to cold storage immediately.\n2. Reject shipment if TOTAL_LOSS.\n3. File insurance claim specifying code SHELF_LIFE_Arrhenius_3.5.",
+    "pdf_path": "tms_claims/claim_report_TEST-TMS-9999.pdf"
+  },
+  {
+    "event_id": "EV-1780691875-TEST-TMS-9",
+    "tms_system": "CargoWise",
+    "event_type": "SHIPMENT_DELIVERED",
+    "shipment_id": "TEST-TMS-9999",
+    "cargo_type": "Organic Sweet Rainier Cherries",
+    "commercial_value_usd": 85000.0,
+    "received_at": "2026-06-05T15:37:55.826873Z",
+    "status": "Completed",
+    "extracted_terms": {
+      "deductible": "Deductible: $5,000 USD per shipment event.",
+      "exclusions": "The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.",
+      "liability_limits": "Maximum liability capped at 60% of commercial value of the damaged perishable goods.",
+      "raw_contract_text": "COLD CHAIN CARRIAGE SLA AGREEMENT (CHERRIES)\n\n1. INTRODUCTION & DEFINITIONS\nThis agreement governs the cold chain transport requirements for fresh cherry shipments.\n\n2. FINANCIAL LIABILITY RULES\nClause 2.1 - Deductible: $5,000 USD per shipment event. This deductible applies to all claims.\n\n3. LIABILITY EXCLUSIONS\nClause 3.4 - Exclusions: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\n\n4. OVERALL LIABILITY CAP\nClause 4.2 - Liability Limits: Maximum liability capped at 60% of commercial value of the damaged perishable goods."
+    },
+    "report": {
+      "incident_summary": "Cold chain integrity breach occurred for Shipment TEST-TMS-9999 containing Organic Sweet Rainier Cherries.",
+      "damage_assessment": {
+        "status": "NORMAL",
+        "estimated_loss_usd": 0.0,
+        "scientific_reasoning": "No critical threshold violation observed."
+      },
+      "liability_assignment": {
+        "liable_party": "None",
+        "fault_percentage": 0,
+        "evidence_citation": "Telemetry within normal parameters."
+      },
+      "action_items": [
+        "Isolate affected crates for inspection.",
+        "File formal notice of claim with carrier within contract SLA deadline.",
+        "Verify reefer power status and check for physical seal tampering."
+      ]
+    },
+    "assessor_output": "Cargo Damage Assessor Report:\nIntegrated telemetry analysis reveals cargo is in a state of NORMAL.\nLoss calculated: $0.00 USD.\nReasoning: No critical threshold violation observed.",
+    "legal_output": "Liability Legal Officer Report:\nLiability determined: None is 0% liable.\nContractual check: Deductible applied. Exclusions checked: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\nEvidence: Telemetry within normal parameters.",
+    "dispatcher_output": "Emergency Dispatcher Report:\nAction items formulated:\n1. Move cargo to cold storage immediately.\n2. Reject shipment if TOTAL_LOSS.\n3. File insurance claim specifying code SHELF_LIFE_Arrhenius_3.5.",
+    "pdf_path": "tms_claims/claim_report_TEST-TMS-9999.pdf"
+  },
+  {
+    "event_id": "EV-1780562650-TEST-TMS-9",
+    "tms_system": "CargoWise",
+    "event_type": "SHIPMENT_DELIVERED",
+    "shipment_id": "TEST-TMS-9999",
+    "cargo_type": "Organic Sweet Rainier Cherries",
+    "commercial_value_usd": 85000.0,
+    "received_at": "2026-06-04T03:44:10.811233Z",
+    "status": "Completed",
+    "extracted_terms": {
+      "deductible": "Deductible: $5,000 USD per shipment event.",
+      "exclusions": "The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.",
+      "liability_limits": "Maximum liability capped at 60% of commercial value of the damaged perishable goods.",
+      "raw_contract_text": "COLD CHAIN CARRIAGE SLA AGREEMENT (CHERRIES)\n\n1. INTRODUCTION & DEFINITIONS\nThis agreement governs the cold chain transport requirements for fresh cherry shipments.\n\n2. FINANCIAL LIABILITY RULES\nClause 2.1 - Deductible: $5,000 USD per shipment event. This deductible applies to all claims.\n\n3. LIABILITY EXCLUSIONS\nClause 3.4 - Exclusions: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\n\n4. OVERALL LIABILITY CAP\nClause 4.2 - Liability Limits: Maximum liability capped at 60% of commercial value of the damaged perishable goods."
+    },
+    "report": {
+      "incident_summary": "Cold chain integrity breach occurred for Shipment TEST-TMS-9999 containing Organic Sweet Rainier Cherries.",
+      "damage_assessment": {
+        "status": "NORMAL",
+        "estimated_loss_usd": 0.0,
+        "scientific_reasoning": "No critical threshold violation observed."
+      },
+      "liability_assignment": {
+        "liable_party": "None",
+        "fault_percentage": 0,
+        "evidence_citation": "Telemetry within normal parameters."
+      },
+      "action_items": [
+        "Isolate affected crates for inspection.",
+        "File formal notice of claim with carrier within contract SLA deadline.",
+        "Verify reefer power status and check for physical seal tampering."
+      ]
+    },
+    "assessor_output": "Cargo Damage Assessor Report:\nIntegrated telemetry analysis reveals cargo is in a state of NORMAL.\nLoss calculated: $0.00 USD.\nReasoning: No critical threshold violation observed.",
+    "legal_output": "Liability Legal Officer Report:\nLiability determined: None is 0% liable.\nContractual check: Deductible applied. Exclusions checked: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\nEvidence: Telemetry within normal parameters.",
+    "dispatcher_output": "Emergency Dispatcher Report:\nAction items formulated:\n1. Move cargo to cold storage immediately.\n2. Reject shipment if TOTAL_LOSS.\n3. File insurance claim specifying code SHELF_LIFE_Arrhenius_3.5.",
+    "pdf_path": "tms_claims/claim_report_TEST-TMS-9999.pdf"
+  },
+  {
+    "event_id": "EV-1780561290-TEST-TMS-9",
+    "tms_system": "CargoWise",
+    "event_type": "SHIPMENT_DELIVERED",
+    "shipment_id": "TEST-TMS-9999",
+    "cargo_type": "Organic Sweet Rainier Cherries",
+    "commercial_value_usd": 85000.0,
+    "received_at": "2026-06-04T03:21:30.999956Z",
+    "status": "Completed",
+    "extracted_terms": {
+      "deductible": "Deductible: $5,000 USD per shipment event.",
+      "exclusions": "The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.",
+      "liability_limits": "Maximum liability capped at 60% of commercial value of the damaged perishable goods.",
+      "raw_contract_text": "COLD CHAIN CARRIAGE SLA AGREEMENT (CHERRIES)\n\n1. INTRODUCTION & DEFINITIONS\nThis agreement governs the cold chain transport requirements for fresh cherry shipments.\n\n2. FINANCIAL LIABILITY RULES\nClause 2.1 - Deductible: $5,000 USD per shipment event. This deductible applies to all claims.\n\n3. LIABILITY EXCLUSIONS\nClause 3.4 - Exclusions: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\n\n4. OVERALL LIABILITY CAP\nClause 4.2 - Liability Limits: Maximum liability capped at 60% of commercial value of the damaged perishable goods."
+    },
+    "report": {
+      "incident_summary": "Cold chain integrity breach occurred for Shipment TEST-TMS-9999 containing Organic Sweet Rainier Cherries.",
+      "damage_assessment": {
+        "status": "NORMAL",
+        "estimated_loss_usd": 0.0,
+        "scientific_reasoning": "No critical threshold violation observed."
+      },
+      "liability_assignment": {
+        "liable_party": "None",
+        "fault_percentage": 0,
+        "evidence_citation": "Telemetry within normal parameters."
+      },
+      "action_items": [
+        "Isolate affected crates for inspection.",
+        "File formal notice of claim with carrier within contract SLA deadline.",
+        "Verify reefer power status and check for physical seal tampering."
+      ]
+    },
+    "assessor_output": "Cargo Damage Assessor Report:\nIntegrated telemetry analysis reveals cargo is in a state of NORMAL.\nLoss calculated: $0.00 USD.\nReasoning: No critical threshold violation observed.",
+    "legal_output": "Liability Legal Officer Report:\nLiability determined: None is 0% liable.\nContractual check: Deductible applied. Exclusions checked: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\nEvidence: Telemetry within normal parameters.",
+    "dispatcher_output": "Emergency Dispatcher Report:\nAction items formulated:\n1. Move cargo to cold storage immediately.\n2. Reject shipment if TOTAL_LOSS.\n3. File insurance claim specifying code SHELF_LIFE_Arrhenius_3.5.",
+    "pdf_path": "tms_claims/claim_report_TEST-TMS-9999.pdf"
+  },
+  {
+    "event_id": "EV-1780560497-TEST-TMS-9",
+    "tms_system": "CargoWise",
+    "event_type": "SHIPMENT_DELIVERED",
+    "shipment_id": "TEST-TMS-9999",
+    "cargo_type": "Organic Sweet Rainier Cherries",
+    "commercial_value_usd": 85000.0,
+    "received_at": "2026-06-04T03:08:17.240117Z",
+    "status": "Completed",
+    "extracted_terms": {
+      "deductible": "Deductible: $5,000 USD per shipment event.",
+      "exclusions": "The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.",
+      "liability_limits": "Maximum liability capped at 60% of commercial value of the damaged perishable goods.",
+      "raw_contract_text": "COLD CHAIN CARRIAGE SLA AGREEMENT (CHERRIES)\n\n1. INTRODUCTION & DEFINITIONS\nThis agreement governs the cold chain transport requirements for fresh cherry shipments.\n\n2. FINANCIAL LIABILITY RULES\nClause 2.1 - Deductible: $5,000 USD per shipment event. This deductible applies to all claims.\n\n3. LIABILITY EXCLUSIONS\nClause 3.4 - Exclusions: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\n\n4. OVERALL LIABILITY CAP\nClause 4.2 - Liability Limits: Maximum liability capped at 60% of commercial value of the damaged perishable goods."
+    },
+    "report": {
+      "incident_summary": "Cold chain integrity breach occurred for Shipment TEST-TMS-9999 containing Organic Sweet Rainier Cherries.",
+      "damage_assessment": {
+        "status": "NORMAL",
+        "estimated_loss_usd": 0.0,
+        "scientific_reasoning": "No critical threshold violation observed."
+      },
+      "liability_assignment": {
+        "liable_party": "None",
+        "fault_percentage": 0,
+        "evidence_citation": "Telemetry within normal parameters."
+      },
+      "action_items": [
+        "Isolate affected crates for inspection.",
+        "File formal notice of claim with carrier within contract SLA deadline.",
+        "Verify reefer power status and check for physical seal tampering."
+      ]
+    },
+    "assessor_output": "Cargo Damage Assessor Report:\nIntegrated telemetry analysis reveals cargo is in a state of NORMAL.\nLoss calculated: $0.00 USD.\nReasoning: No critical threshold violation observed.",
+    "legal_output": "Liability Legal Officer Report:\nLiability determined: None is 0% liable.\nContractual check: Deductible applied. Exclusions checked: The carrier is exempt from liability if the temperature deviation is due to customs clearing delays or shipper's failure to pre-cool the cargo before loading. Standard reefer failure is covered only if it lasts more than 4 continuous hours.\nEvidence: Telemetry within normal parameters.",
+    "dispatcher_output": "Emergency Dispatcher Report:\nAction items formulated:\n1. Move cargo to cold storage immediately.\n2. Reject shipment if TOTAL_LOSS.\n3. File insurance claim specifying code SHELF_LIFE_Arrhenius_3.5.",
+    "pdf_path": "tms_claims/claim_report_TEST-TMS-9999.pdf"
+  }
+]

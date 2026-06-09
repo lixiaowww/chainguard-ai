@@ -1,0 +1,10 @@
+[
+  {
+    "shipment_id": "TEST-TMS-9999",
+    "timestamp": "2026-06-05T16:25:52.107491Z",
+    "telemetry_hash": "3e2bfb3c854528a050fd99a0533b85af6baf4b94e0b84f116e82fbb24481522a",
+    "terms_hash": "2f4978411d9bc7906c39e310dc52ccbe5a831955cccdfc583d776b6a52872f99",
+    "pdf_hash": "21f157f076bfd5925eb1f2f7da324633e22c4c18564e59499f3df8804753f6cf",
+    "combined_hash": "1d0170c5509388e8e4f9871bb7f34173be7cb8d97ab17f2074f06a727436b0a2"
+  }
+]
