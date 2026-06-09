@@ -755,7 +755,7 @@ export default function App() {
           shipment_id: shipmentId || "unknown_shipment",
           cargo_type: cargoType,
           commercial_value: commercialValue,
-          extracted_terms: analysisReport.extracted_terms || {},
+          extracted_terms: analysisReport?.extracted_terms || {},
           report: analysisReport,
           telemetry: telemetry
         })
@@ -814,7 +814,7 @@ export default function App() {
         if (analysisReport) {
           payload.shipment_id = shipmentId;
           payload.telemetry = JSON.stringify(telemetry);
-          payload.extracted_terms = JSON.stringify(analysisReport.extracted_terms || {});
+          payload.extracted_terms = JSON.stringify(analysisReport?.extracted_terms || {});
         }
 
         const res = await fetch("/api/audit/verify", {
@@ -843,7 +843,7 @@ export default function App() {
 
   const renderHighlightedContractText = () => {
     if (!analysisReport) return null;
-    const rawText = analysisReport.extracted_terms?.raw_contract_text || "No original contract text parsed in the RAG payload.";
+    const rawText = analysisReport?.extracted_terms?.raw_contract_text || "No original contract text parsed in the RAG payload.";
     if (!activeHighlightCategory) {
       return <pre className="whitespace-pre-wrap font-mono text-[10px] leading-relaxed text-hd-ink">{rawText}</pre>;
     }
@@ -2011,24 +2011,24 @@ fetch(url, {
                       {/* Status Indicator Meter */}
                       <div className="bg-white border border-hd-line p-4.5 rounded-none flex items-center gap-4 relative shadow-[1px_1px_0px_rgba(20,20,20,1)]">
                         <div className="absolute top-2 right-2 flex items-center justify-center">
-                          {analysisReport.damage_assessment.status === "TOTAL_LOSS" && (
+                          {analysisReport?.damage_assessment?.status === "TOTAL_LOSS" && (
                             <span className="w-2.5 h-2.5 rounded-none bg-red-600 animate-ping"></span>
                           )}
-                          {analysisReport.damage_assessment.status === "PARTIAL_DAMAGE" && (
+                          {analysisReport?.damage_assessment?.status === "PARTIAL_DAMAGE" && (
                             <span className="w-2.5 h-2.5 rounded-none bg-amber-600 animate-ping"></span>
                           )}
                         </div>
 
                         <div className={`p-4 rounded-none border-2 ${
-                          analysisReport.damage_assessment.status === "TOTAL_LOSS"
+                          analysisReport?.damage_assessment?.status === "TOTAL_LOSS"
                             ? "bg-rose-50 text-red-700 border-red-600"
-                            : analysisReport.damage_assessment.status === "PARTIAL_DAMAGE"
+                            : analysisReport?.damage_assessment?.status === "PARTIAL_DAMAGE"
                             ? "bg-amber-50 text-amber-700 border-amber-600"
                             : "bg-emerald-50 text-emerald-700 border-emerald-600"
                         }`}>
-                          {analysisReport.damage_assessment.status === "TOTAL_LOSS" ? (
+                          {analysisReport?.damage_assessment?.status === "TOTAL_LOSS" ? (
                             <ShieldAlert className="w-7 h-7" />
-                          ) : analysisReport.damage_assessment.status === "PARTIAL_DAMAGE" ? (
+                          ) : analysisReport?.damage_assessment?.status === "PARTIAL_DAMAGE" ? (
                             <AlertTriangle className="w-7 h-7" />
                           ) : (
                             <ShieldCheck className="w-7 h-7" />
@@ -2040,18 +2040,18 @@ fetch(url, {
                             Cargo Integrity Status
                           </span>
                           <strong className={`text-base font-bold tracking-tight uppercase block ${
-                            analysisReport.damage_assessment.status === "TOTAL_LOSS"
+                            analysisReport?.damage_assessment?.status === "TOTAL_LOSS"
                               ? "text-red-700"
-                              : analysisReport.damage_assessment.status === "PARTIAL_DAMAGE"
+                              : analysisReport?.damage_assessment?.status === "PARTIAL_DAMAGE"
                               ? "text-amber-700"
                               : "text-emerald-700"
                           }`}>
-                            {analysisReport.damage_assessment.status.replace("_", " ")}
+                            {analysisReport?.damage_assessment?.status?.replace("_", " ")}
                           </strong>
                           <span className="text-[10px] text-zinc-600 font-sans mt-0.5 block leading-tight font-bold uppercase text-[9px] tracking-wide">
-                            {analysisReport.damage_assessment.status === "TOTAL_LOSS"
+                            {analysisReport?.damage_assessment?.status === "TOTAL_LOSS"
                               ? "Spoiled / microbially contaminated."
-                              : analysisReport.damage_assessment.status === "PARTIAL_DAMAGE"
+                              : analysisReport?.damage_assessment?.status === "PARTIAL_DAMAGE"
                               ? "Thermal margin broken; decay applied."
                               : "Preserved within legal bio-safety limits."}
                           </span>
@@ -2068,20 +2068,20 @@ fetch(url, {
                             Estimated Impairment Valuation
                           </span>
                           <strong className="text-xl font-black tracking-tight text-hd-ink block font-mono">
-                            ${analysisReport.damage_assessment.estimated_loss_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ${ (analysisReport?.damage_assessment?.estimated_loss_usd || 0)?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             <span className="text-xs font-normal text-zinc-500 ml-1">USD</span>
                           </strong>
                           {/* loss ratio bar */}
                           <div className="w-full bg-zinc-100 rounded-none h-2.5 mt-2 overflow-hidden border border-hd-line p-px">
                             <div
                               className={`h-full rounded-none ${
-                                analysisReport.damage_assessment.status === "TOTAL_LOSS" ? "bg-red-600" : "bg-amber-600"
+                                analysisReport?.damage_assessment?.status === "TOTAL_LOSS" ? "bg-red-600" : "bg-amber-600"
                               }`}
-                              style={{ width: `${Math.min(100, (analysisReport.damage_assessment.estimated_loss_usd / (commercialValue || 1)) * 100)}%` }}
+                              style={{ width: `${Math.min(100, ( (analysisReport?.damage_assessment?.estimated_loss_usd || 0) / (commercialValue || 1)) * 100)}%` }}
                             ></div>
                           </div>
                           <span className="text-[9px] text-zinc-500 font-mono mt-1 block font-bold uppercase">
-                            {((analysisReport.damage_assessment.estimated_loss_usd / (commercialValue || 1)) * 100).toFixed(1)}% / ${commercialValue.toLocaleString()} declared SLA
+                            {(( (analysisReport?.damage_assessment?.estimated_loss_usd || 0) / (commercialValue || 1)) * 100).toFixed(1)}% / ${commercialValue.toLocaleString()} declared SLA
                           </span>
                         </div>
                       </div>
@@ -2144,11 +2144,11 @@ fetch(url, {
                                   ...analysisReport,
                                   incident_summary: editedIncidentSummary,
                                   damage_assessment: {
-                                    ...analysisReport.damage_assessment,
+                                    ...analysisReport?.damage_assessment,
                                     scientific_reasoning: editedScientificReasoning
                                   },
                                   liability_assignment: {
-                                    ...analysisReport.liability_assignment,
+                                    ...analysisReport?.liability_assignment,
                                     liable_party: overrideLiableParty,
                                     fault_percentage: overrideFaultPct
                                   }
@@ -2240,7 +2240,7 @@ fetch(url, {
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] text-zinc-500 font-mono uppercase font-bold">Assigned fault:</span>
                           <span className="text-[11px] font-mono font-bold bg-[#141414] text-white px-2 py-0.5 rounded-none uppercase">
-                            {analysisReport.liability_assignment.liable_party} ({analysisReport.liability_assignment.fault_percentage}%)
+                            {analysisReport?.liability_assignment?.liable_party} ({analysisReport?.liability_assignment?.fault_percentage}%)
                           </span>
                         </div>
                       </div>
@@ -2252,16 +2252,16 @@ fetch(url, {
                         <div className="flex flex-col gap-1 bg-zinc-50 p-3.5 rounded-none border border-zinc-200">
                           <div className="flex items-center justify-between text-xs mb-1.5 font-bold">
                             <span className="text-hd-ink flex items-center gap-1.5">
-                              🛡 {analysisReport.liability_assignment.liable_party} Arbitration fault fraction
+                              🛡 {analysisReport?.liability_assignment?.liable_party} Arbitration fault fraction
                             </span>
                             <span className="font-mono text-red-650 font-bold">
-                              {analysisReport.liability_assignment.fault_percentage}%
+                              {analysisReport?.liability_assignment?.fault_percentage}%
                             </span>
                           </div>
                           <div className="w-full bg-white rounded-none h-4 border border-hd-line p-0.5 overflow-hidden">
                             <div
                               className="h-full rounded-none bg-red-600 transition-all duration-500"
-                              style={{ width: `${analysisReport.liability_assignment.fault_percentage}%` }}
+                              style={{ width: `${analysisReport?.liability_assignment?.fault_percentage}%` }}
                             ></div>
                           </div>
                           <div className="flex justify-between text-[9px] text-zinc-500 font-mono mt-1 font-bold uppercase">
@@ -2277,7 +2277,7 @@ fetch(url, {
                             Arbitration evidence & telemetry sensor trace logs
                           </span>
                           <p id="evidence-text" className="text-xs text-zinc-805 leading-relaxed font-sans leading-relaxed font-medium">
-                            {analysisReport.liability_assignment.evidence_citation}
+                            {analysisReport?.liability_assignment?.evidence_citation}
                           </p>
                         </div>
                       </div>
@@ -2290,7 +2290,7 @@ fetch(url, {
                         <span>Arbitration protocols & claimant guide action list</span>
                       </div>
                       <ul className="flex flex-col gap-2.5">
-                        {analysisReport.action_items.map((item, idx) => (
+                        {analysisReport?.action_items.map((item, idx) => (
                           <li key={idx} className="flex items-start gap-1.5 text-xs text-zinc-805 leading-relaxed font-medium">
                             <span className="text-red-700 font-mono select-none font-bold mt-0.5">{idx + 1}.</span>
                             <span>{item}</span>
@@ -2349,7 +2349,7 @@ fetch(url, {
                           </span>
                         </div>
                         <p className="text-xs text-hd-ink font-mono font-bold whitespace-pre-wrap leading-relaxed">
-                          {analysisReport.extracted_terms?.deductible || "No deductible term parsed."}
+                          {analysisReport?.extracted_terms?.deductible || "No deductible term parsed."}
                         </p>
                       </div>
 
@@ -2374,7 +2374,7 @@ fetch(url, {
                           </span>
                         </div>
                         <p className="text-xs text-hd-ink leading-relaxed font-semibold">
-                          {analysisReport.extracted_terms?.exclusions || "No exclusions terms parsed."}
+                          {analysisReport?.extracted_terms?.exclusions || "No exclusions terms parsed."}
                         </p>
                       </div>
 
@@ -2399,7 +2399,7 @@ fetch(url, {
                           </span>
                         </div>
                         <p className="text-xs text-hd-ink leading-relaxed font-semibold">
-                          {analysisReport.extracted_terms?.liability_limits || "No liability limits term parsed."}
+                          {analysisReport?.extracted_terms?.liability_limits || "No liability limits term parsed."}
                         </p>
                       </div>
 
@@ -2469,7 +2469,7 @@ fetch(url, {
                         </details>
 
                         <div className="bg-zinc-950 p-4 border border-hd-line text-xs font-mono text-zinc-200 overflow-x-auto whitespace-pre-wrap leading-relaxed">
-                          {analysisReport.assessor_output || "No agent output recorded."}
+                          {analysisReport?.assessor_output || "No agent output recorded."}
                         </div>
                       </div>
                     </div>
@@ -2508,7 +2508,7 @@ fetch(url, {
                         </details>
 
                         <div className="bg-zinc-950 p-4 border border-hd-line text-xs font-mono text-zinc-200 overflow-x-auto whitespace-pre-wrap leading-relaxed">
-                          {analysisReport.legal_output || "No agent output recorded."}
+                          {analysisReport?.legal_output || "No agent output recorded."}
                         </div>
                       </div>
                     </div>
@@ -2547,7 +2547,7 @@ fetch(url, {
                         </details>
 
                         <div className="bg-zinc-950 p-4 border border-hd-line text-xs font-mono text-zinc-200 overflow-x-auto whitespace-pre-wrap leading-relaxed">
-                          {analysisReport.dispatcher_output || "No agent output recorded."}
+                          {analysisReport?.dispatcher_output || "No agent output recorded."}
                         </div>
                       </div>
                     </div>
