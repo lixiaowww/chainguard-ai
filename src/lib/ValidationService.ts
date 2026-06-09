@@ -92,7 +92,7 @@ export class ValidationService {
    */
   static getExtractionPrompt(idea: string, competitors: string) {
     return `
-你是一个顶级的风险投资分析师，正在使用 Idea2Business pro 系统进行商业审计。
+你是一个顶级的全球冷链审计专家，正在使用 ChainGuard AI 系统进行货损判定。
 请基于以下想法和搜索到的信号，输出结构化的 JSON 评估报告。
 
 想法: ${idea}

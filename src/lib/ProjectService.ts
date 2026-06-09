@@ -1,7 +1,7 @@
 
 /**
  * ProjectService.ts
- * 管理 Idea2Business pro 中的项目生命周期、状态机和历史版本。
+ * 管理 ChainGuard AI 中的审计项目生命周期、状态机和历史版本。
  * SaaS 版：使用 Supabase 进行云端持久化。
  */
 import { supabase } from './supabase';

@@ -1,4 +1,4 @@
--- Idea2Business Cloud SaaS - Supabase Schema Initialization
+-- ChainGuard AI Cloud SaaS - Supabase Schema Initialization
 -- 本脚本用于初始化 Supabase 数据库表结构，配置主外键关系，并开启 Row Level Security (RLS) 行级安全策略。
 
 -- 启用 UUID 扩展

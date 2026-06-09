@@ -55,7 +55,7 @@ const REPORT_MARKDOWN = `
 
 ## 4. 商业建模评分 (Commercial Score Calculation)
 
-基于 **Idea2Business Pro 乘法地板逻辑 (Multiplicative Floor Algorithm)** 评估：
+基于 **ChainGuard AI 物理定责逻辑** 评估：
 
 | 评估维度 | 得分 (Score) | 权重 (Weight) | 加权得分 | 审计事实与证据支撑 (Evidence) |
 | :--- | :---: | :---: | :---: | :--- |

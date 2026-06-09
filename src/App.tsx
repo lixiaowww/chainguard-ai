@@ -115,8 +115,8 @@ function LoginView({ onLogin }: { onLogin: () => void }) {
           <div className="w-12 h-12 bg-cyan-500 rounded-xl flex items-center justify-center text-black font-bold mb-4">
             <Zap className="h-8 w-8" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Idea2Business <span className="text-cyan-400">CLOUD</span></h1>
-          <p className="text-slate-500 text-sm mt-2">{isSignUp ? 'Create your SaaS account' : 'Welcome back, Analyst'}</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">ChainGuard <span className="text-cyan-400">AI</span></h1>
+          <p className="text-slate-500 text-sm mt-2">{isSignUp ? 'Create your Audit account' : 'Welcome back, Auditor'}</p>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-4">
@@ -130,7 +130,7 @@ function LoginView({ onLogin }: { onLogin: () => void }) {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2.5 pl-10 pr-4 text-sm text-slate-200 focus:ring-1 focus:ring-cyan-500 outline-none"
-                placeholder="analyst@venture.pro"
+                placeholder="auditor@chainguard.ai"
               />
             </div>
           </div>
@@ -206,7 +206,7 @@ export default function App() {
   const [selectedModel, setSelectedModel] = useState('gemini-3.5-flash');
 
   // Pain Radar state
-  const [activeTab, setActiveTab] = useState<'auditor' | 'radar' | 'tms_autopilot'>('auditor');
+  const [activeTab, setActiveTab] = useState<'auditor' | 'radar' | 'tms_autopilot'>('tms_autopilot');
   const [tmsAudits, setTmsAudits] = useState<any[]>([]);
   const [activeAuditId, setActiveAuditId] = useState<string | null>(null);
   const [isTmsLoading, setIsTmsLoading] = useState(false);
@@ -627,7 +627,7 @@ export default function App() {
       <header className="bg-slate-900/50 backdrop-blur-md border-b border-slate-800 sticky top-0 z-10 px-8 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Zap className="h-6 w-6 text-cyan-500" />
-          <h1 className="text-xl font-semibold text-white">Idea2Business <span className="text-cyan-400 font-light">CLOUD</span></h1>
+          <h1 className="text-xl font-semibold text-white">ChainGuard <span className="text-cyan-400 font-light">AI</span></h1>
           
           <nav className="flex space-x-2 ml-8 border-l border-slate-800 pl-8">
             <button 
@@ -637,7 +637,7 @@ export default function App() {
                 activeTab === 'auditor' ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "text-slate-500 hover:text-slate-300 border border-transparent"
               )}
             >
-              Idea Auditor (想法审计)
+              Intelligence Auditor (智能审计)
             </button>
             <button 
               onClick={() => setActiveTab('radar')}
@@ -646,7 +646,7 @@ export default function App() {
                 activeTab === 'radar' ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "text-slate-500 hover:text-slate-300 border border-transparent"
               )}
             >
-              Pain Radar (需求雷达)
+              Cargo Radar (货运雷达)
             </button>
             <button 
               onClick={() => setActiveTab('tms_autopilot')}
@@ -655,7 +655,7 @@ export default function App() {
                 activeTab === 'tms_autopilot' ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30" : "text-slate-500 hover:text-slate-300 border border-transparent"
               )}
             >
-              TMS Autopilot (理赔官托管)
+              TMS Autopilot (托管理赔)
             </button>
           </nav>
         </div>
