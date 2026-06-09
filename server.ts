@@ -82,23 +82,66 @@ app.post("/api/upload-contract", (req, res) => {
   }
 });
 
-// Webhook for live telemetry
-app.post("/api/webhook/telemetry", (req, res) => {
-  // Simple pass-through or log
-  console.log(`[Telemetry Webhook] Received data for: ${req.body.shipment_id}`);
-  res.json({ success: true });
-});
-
-// Analyze Telemetry - Proxy to Python
+// Analyze Telemetry - Complex proxy with multipart form data for Python
 app.post("/api/analyze-telemetry", async (req, res) => {
   try {
+    const {
+      cargo_type,
+      commercial_value_usd,
+      iot_telemetry_history,
+      incident_context,
+      pdf_path
+    } = req.body;
+
+    const contractsDir = path.join(process.cwd(), "contracts");
+    let contractPdfPath = pdf_path || path.join(contractsDir, "cherries_sla_agreement.pdf");
+    
+    if (!fs.existsSync(contractPdfPath)) {
+        // Try relative path
+        contractPdfPath = path.resolve(process.cwd(), contractPdfPath);
+    }
+
+    if (!fs.existsSync(contractPdfPath)) {
+        return res.status(404).json({ error: `Contract PDF not found: ${contractPdfPath}` });
+    }
+
+    const pdfBuffer = fs.readFileSync(contractPdfPath);
+    const pdfBlob = new Blob([pdfBuffer], { type: "application/pdf" });
+
+    const formData = new FormData();
+    formData.append("contract_file", pdfBlob, path.basename(contractPdfPath));
+    formData.append("telemetry", JSON.stringify(iot_telemetry_history || []));
+    formData.append("cargo_type", cargo_type || "Unknown");
+    formData.append("commercial_value", String(commercial_value_usd || 0));
+    if (incident_context) {
+      formData.append("incident_context", incident_context);
+    }
+    
+    // Check if API key exists, if not run in mock mode
+    if (!process.env.DEEPSEEK_API_KEY && !process.env.GEMINI_API_KEY) {
+      formData.append("mock", "true");
+    }
+
     const response = await fetch("http://localhost:8081/v1/audit", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body)
+      body: formData
     });
-    const result = await response.json();
-    res.json(result);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      return res.status(500).json({ error: `FastAPI Failed: ${errText}` });
+    }
+
+    const auditResult: any = await response.json();
+    
+    // Return to frontend in expected format
+    res.json({
+      ...auditResult.report,
+      extracted_terms: auditResult.extracted_terms,
+      assessor_output: auditResult.assessor_output,
+      legal_output: auditResult.legal_output,
+      dispatcher_output: auditResult.dispatcher_output
+    });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -145,32 +188,11 @@ app.post("/api/audit/pdf", async (req, res) => {
   }
 });
 
-// Audit Chain Proxy
 app.get("/api/audit/chain", async (req, res) => {
   try {
     const response = await fetch("http://localhost:8081/v1/audit/chain");
     const result = await response.json();
     res.json(result);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Chat Assistant Proxy
-app.post("/api/chat-assistant", async (req, res) => {
-  try {
-    const { messages, shipment_data } = req.body;
-    const systemPrompt = "You are the ChainGuard AI assistant. Help the user with cold chain audit questions.";
-    
-    const response = await openai.chat.completions.create({
-      model: process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...messages
-      ]
-    });
-    
-    res.json({ content: response.choices[0].message.content });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
