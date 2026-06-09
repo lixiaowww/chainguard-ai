@@ -1,5 +1,5 @@
 # Use Node.js for building the frontend and running the Node backend
-# Trigger rebuild: 2026-06-08 18:59
+# Trigger rebuild: 2026-06-08 22:30
 FROM node:20-slim
 
 # Install Python and other necessary tools
