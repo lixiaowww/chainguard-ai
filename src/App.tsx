@@ -72,20 +72,20 @@ function LoginView({ onLogin }: { onLogin: () => void }) {
             <ShieldCheck className="h-8 w-8" />
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight font-mono uppercase">ChainGuard <span className="text-red-500">AI</span></h1>
-          <p className="text-zinc-500 text-[10px] font-mono uppercase tracking-widest mt-2">{isSignUp ? 'Create your Audit account' : 'Access Secure Audit Terminal'}</p>
+          <p className="text-zinc-700 text-[10px] font-mono uppercase tracking-widest mt-2">{isSignUp ? 'Create your Audit account' : 'Access Secure Audit Terminal'}</p>
         </div>
         <form onSubmit={handleAuth} className="space-y-4 font-mono">
           <div>
-            <label className="block text-[9px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Email Address</label>
+            <label className="block text-[9px] uppercase tracking-widest text-zinc-700 font-bold mb-2">Email Address</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-800" />
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full bg-zinc-950 border border-zinc-800 rounded-none py-2.5 pl-10 pr-4 text-xs text-white focus:ring-1 focus:ring-red-650 outline-none" placeholder="auditor@chainguard.ai" />
             </div>
           </div>
           <div>
-            <label className="block text-[9px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Password</label>
+            <label className="block text-[9px] uppercase tracking-widest text-zinc-700 font-bold mb-2">Password</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-800" />
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full bg-zinc-950 border border-zinc-800 rounded-none py-2.5 pl-10 pr-4 text-xs text-white focus:ring-1 focus:ring-red-650 outline-none" placeholder="••••••••" />
             </div>
           </div>
@@ -95,7 +95,7 @@ function LoginView({ onLogin }: { onLogin: () => void }) {
           </button>
         </form>
         <div className="mt-6 text-center">
-          <button onClick={() => setIsSignUp(!isSignUp)} className="text-[10px] font-mono text-zinc-500 hover:text-red-500 transition-colors uppercase tracking-tight">
+          <button onClick={() => setIsSignUp(!isSignUp)} className="text-[10px] font-mono text-zinc-700 hover:text-red-500 transition-colors uppercase tracking-tight">
             {isSignUp ? 'Already registered? Sign In' : "No access? Request Audit Account"}
           </button>
         </div>
@@ -1065,7 +1065,7 @@ fetch(url, {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center font-mono">
         <Loader2 className="h-8 w-8 text-red-650 animate-spin" />
-        <span className="ml-4 text-zinc-500 uppercase tracking-widest text-[10px] font-bold">Establishing Secure Link...</span>
+        <span className="ml-4 text-zinc-700 uppercase tracking-widest text-[10px] font-bold">Establishing Secure Link...</span>
       </div>
     );
   }
@@ -1122,8 +1122,8 @@ fetch(url, {
             
             <div className="flex items-center gap-3 ml-4 bg-zinc-100 p-1 border border-hd-line font-mono text-[9px] font-bold uppercase">
               <div className="flex items-center gap-1.5 px-2">
-                <UserCircle className="h-3.5 w-3.5 text-zinc-500" />
-                <span className="text-zinc-600">{session.user.email}</span>
+                <UserCircle className="h-3.5 w-3.5 text-zinc-700" />
+                <span className="text-zinc-800">{session.user.email}</span>
               </div>
               <button 
                 onClick={handleLogout}
@@ -1161,11 +1161,11 @@ fetch(url, {
           
           {/* Preset Selector */}
           <section id="preset-selector-card" className="bg-white border border-hd-line p-5 rounded-none shadow-[2px_2px_0px_rgba(20,20,20,1)] relative">
-            <div className="font-serif-georgia italic text-xs text-hd-ink/70 uppercase tracking-wider border-b border-hd-line pb-2 mb-3 flex items-center gap-1.5">
+            <div className="font-serif-georgia italic text-xs text-hd-ink uppercase tracking-wider border-b border-hd-line pb-2 mb-3 flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-amber-600" />
               <span>Logistics Incident Scenarios</span>
             </div>
-            <p className="text-xs text-hd-ink/70 mb-4 font-sans leading-tight">
+            <p className="text-xs text-hd-ink mb-4 font-sans leading-tight">
               Select a real-world cold-chain shipment template to pre-load calibrated IoT telemetries, cargo value, and contract terms.
             </p>
             <div className="grid grid-cols-1 gap-2">
@@ -1190,7 +1190,7 @@ fetch(url, {
                         </span>
                       )}
                     </span>
-                    <span className={`text-[11px] leading-tight ${isSelected ? "text-zinc-300" : "text-zinc-600"}`}>
+                    <span className={`text-[11px] leading-tight ${isSelected ? "text-zinc-300" : "text-zinc-800"}`}>
                       {item.description}
                     </span>
                   </button>
@@ -1202,7 +1202,7 @@ fetch(url, {
           {/* Form Editor */}
           <section id="shipment-form" className="bg-white border border-hd-line p-5 rounded-none shadow-[2px_2px_0px_rgba(20,20,20,1)] relative">
             <div className="flex items-center justify-between mb-4 border-b border-hd-line pb-2">
-              <div className="font-serif-georgia italic text-xs text-hd-ink/70 uppercase tracking-wider flex items-center gap-2">
+              <div className="font-serif-georgia italic text-xs text-hd-ink uppercase tracking-wider flex items-center gap-2">
                 <FileText className="w-3.5 h-3.5 text-hd-ink" />
                 <span>Cargo Parameters & SLA Rules</span>
               </div>
@@ -1219,7 +1219,7 @@ fetch(url, {
 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-hd-ink/70 font-mono uppercase tracking-wide">
+                <label className="text-[10px] font-bold text-hd-ink font-mono uppercase tracking-wide">
                   Shipment Identifier
                 </label>
                 <input
@@ -1231,11 +1231,11 @@ fetch(url, {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-hd-ink/70 font-mono uppercase tracking-wide">
+                <label className="text-[10px] font-bold text-hd-ink font-mono uppercase tracking-wide">
                   Declared Value (USD)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2 text-xs text-hd-ink/50">$</span>
+                  <span className="absolute left-3 top-2 text-xs text-hd-ink">$</span>
                   <input
                     type="number"
                     value={commercialValue}
@@ -1248,7 +1248,7 @@ fetch(url, {
             </div>
 
             <div className="flex flex-col gap-1.5 mb-4">
-              <label className="text-[10px] font-bold text-hd-ink/70 font-mono uppercase tracking-wide">
+              <label className="text-[10px] font-bold text-hd-ink font-mono uppercase tracking-wide">
                 Cargo Type & Substance Info
               </label>
               <input
@@ -1261,7 +1261,7 @@ fetch(url, {
             </div>
 
             <div className="flex flex-col gap-1.5 mb-4 border border-zinc-200 p-3 bg-zinc-50/50">
-              <label className="text-[10px] font-bold text-hd-ink/70 font-mono uppercase tracking-wide flex items-center justify-between">
+              <label className="text-[10px] font-bold text-hd-ink font-mono uppercase tracking-wide flex items-center justify-between">
                 <span>RAG Contract PDF Source</span>
                 <span className="text-[8px] bg-red-105 text-red-700 px-1 font-mono font-bold uppercase rounded-none">
                   LangChain PyPDFLoader
@@ -1296,7 +1296,7 @@ fetch(url, {
                 </select>
 
                 <div className="flex items-center justify-between gap-2 mt-1">
-                  <span className="text-[9px] text-zinc-500 uppercase font-mono font-bold">Or Upload Custom Contract:</span>
+                  <span className="text-[9px] text-zinc-700 uppercase font-mono font-bold">Or Upload Custom Contract:</span>
                   <label className="text-[9px] bg-white border border-hd-line hover:bg-hd-ink hover:text-white px-2 py-1 cursor-pointer font-mono font-bold uppercase transition">
                     {uploading ? "Uploading..." : "Browse PDF"}
                     <input
@@ -1312,7 +1312,7 @@ fetch(url, {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-hd-ink/70 font-mono uppercase tracking-wide">
+              <label className="text-[10px] font-bold text-hd-ink font-mono uppercase tracking-wide">
                 Incident Context & Route Details
               </label>
               <textarea
@@ -1328,12 +1328,12 @@ fetch(url, {
           {/* Interactive Telemetry Data Points Grid */}
           <section id="telemetry-editor" className="bg-white border border-hd-line p-5 rounded-none shadow-[2px_2px_0px_rgba(20,20,20,1)] relative">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 border-b border-hd-line pb-2 gap-2">
-              <div className="font-serif-georgia italic text-xs text-hd-ink/70 uppercase tracking-wider flex items-center gap-2">
+              <div className="font-serif-georgia italic text-xs text-hd-ink uppercase tracking-wider flex items-center gap-2">
                 <Activity className="w-3.5 h-3.5 text-hd-ink" />
                 <span>IoT Telemetry streams</span>
               </div>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[9px] text-hd-ink/60 font-mono font-bold uppercase">Quick Inject:</span>
+                <span className="text-[9px] text-hd-ink font-mono font-bold uppercase">Quick Inject:</span>
                 <button
                   type="button"
                   onClick={() => injectAnomaly("temp_spike")}
@@ -1410,7 +1410,7 @@ fetch(url, {
             <div className="max-h-60 overflow-y-auto mb-4 border border-hd-line rounded-none bg-white">
               <table className="w-full text-left border-collapse text-xs font-mono">
                 <thead>
-                  <tr className="bg-zinc-100 text-hd-ink/60 uppercase text-[9px] tracking-wider font-bold border-b border-hd-line sticky top-0">
+                  <tr className="bg-zinc-100 text-hd-ink uppercase text-[9px] tracking-wider font-bold border-b border-hd-line sticky top-0">
                     <th className="p-2 pl-3">Hour</th>
                     <th className="p-2">Temp (°C)</th>
                     <th className="p-2">Humid (%)</th>
@@ -1498,7 +1498,7 @@ fetch(url, {
               </span>
               <div className="grid grid-cols-4 gap-2 items-end">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-zinc-500 font-bold uppercase font-mono">Time</label>
+                  <label className="text-[9px] text-zinc-700 font-bold uppercase font-mono">Time</label>
                   <input
                     type="text"
                     placeholder="e.g. 05:00 PM"
@@ -1509,7 +1509,7 @@ fetch(url, {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-zinc-500 font-bold uppercase font-mono">Temp (°C)</label>
+                  <label className="text-[9px] text-zinc-700 font-bold uppercase font-mono">Temp (°C)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -1520,7 +1520,7 @@ fetch(url, {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-zinc-500 font-bold uppercase font-mono">Humid %</label>
+                  <label className="text-[9px] text-zinc-700 font-bold uppercase font-mono">Humid %</label>
                   <input
                     type="number"
                     value={newHumidity}
@@ -1530,7 +1530,7 @@ fetch(url, {
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[9px] text-zinc-500 font-bold uppercase font-mono">Shock (G)</label>
+                  <label className="text-[9px] text-zinc-700 font-bold uppercase font-mono">Shock (G)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -1580,7 +1580,7 @@ fetch(url, {
           {/* Telemetry Visual Charts Section */}
           <section id="visual-charts-card" className="bg-white border border-hd-line p-5 rounded-none shadow-[2px_2px_0px_rgba(20,20,20,1)] relative">
             <div className="flex items-center justify-between mb-4 border-b border-hd-line pb-2">
-              <div className="font-serif-georgia italic text-xs text-hd-ink/70 uppercase tracking-wider flex items-center gap-2">
+              <div className="font-serif-georgia italic text-xs text-hd-ink uppercase tracking-wider flex items-center gap-2">
                 <TrendingUp className="w-3.5 h-3.5 text-hd-ink" />
                 <span>Telemetry Trend Visualizer</span>
               </div>
@@ -1717,7 +1717,7 @@ fetch(url, {
               {/* Left Side: Live Stream controls */}
               <div className="flex flex-col gap-2 bg-zinc-50 border border-zinc-200 p-3 rounded-none">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[9px] uppercase font-bold text-zinc-500">IoT Telemetry Feed Control</span>
+                  <span className="font-mono text-[9px] uppercase font-bold text-zinc-700">IoT Telemetry Feed Control</span>
                   <span className="flex items-center gap-1.5 font-mono text-[9px] font-bold uppercase">
                     {isStreaming ? (
                       <>
@@ -1773,7 +1773,7 @@ fetch(url, {
                     Reset
                   </button>
                 </div>
-                <p className="text-[9px] text-zinc-500 font-mono uppercase mt-1">
+                <p className="text-[9px] text-zinc-700 font-mono uppercase mt-1">
                   Interval: 2s/point • Target Shipment: {shipmentId || "N/A"}
                 </p>
               </div>
@@ -1782,7 +1782,7 @@ fetch(url, {
               <div className="flex flex-col justify-between bg-zinc-50 border border-zinc-200 p-3 rounded-none">
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-mono text-[9px] uppercase font-bold text-zinc-500">Bio-degradation Progress (Q10)</span>
+                    <span className="font-mono text-[9px] uppercase font-bold text-zinc-700">Bio-degradation Progress (Q10)</span>
                     <strong className={`font-mono text-xs font-bold ${
                       remainingShelfLifePct < 20 ? "text-red-700" : remainingShelfLifePct < 50 ? "text-amber-700" : "text-emerald-700"
                     }`}>
@@ -1800,7 +1800,7 @@ fetch(url, {
                   </div>
                 </div>
                 
-                <span className="text-[9px] text-zinc-500 leading-normal font-mono uppercase mt-2 block">
+                <span className="text-[9px] text-zinc-700 leading-normal font-mono uppercase mt-2 block">
                   Reference limits: {cargoType.toLowerCase().includes("cherr") ? "3-day life @ 1℃ ref" : cargoType.toLowerCase().includes("vacc") ? "2-day life @ 4℃ ref" : "Dynamic Q10 decay"}
                 </span>
               </div>
@@ -1820,7 +1820,7 @@ fetch(url, {
                 <p className="text-xs text-red-700 font-mono mt-2 font-bold select-none uppercase">{loadingStep}</p>
                 <div className="mt-4 flex flex-col gap-1 items-center max-w-sm mx-auto p-3 bg-zinc-50 border border-zinc-200 rounded-none">
                   <span className="text-[9px] uppercase font-mono font-bold text-hd-ink block">Engine Log stream</span>
-                  <div className="text-[10px] text-zinc-650 font-mono text-left list-none divide-y divide-zinc-200/60 w-full">
+                  <div className="text-[10px] text-zinc-800 font-mono text-left list-none divide-y divide-zinc-200/60 w-full">
                     <div className="py-1">✔ Loading shipment parameters: {cargoType} ($${commercialValue})</div>
                     <div className="py-1">⚡ Sending telemetry logs: {telemetry.length} data rows...</div>
                     <div className="py-1 animate-pulse text-red-700">⚙ Querying biological decay models on Gemini API...</div>
@@ -1871,7 +1871,7 @@ fetch(url, {
                       <h3 className="text-hd-ink font-bold text-sm tracking-tight uppercase">
                         Compliance Audit Claim Report
                       </h3>
-                      <p className="text-[10px] text-zinc-500 mt-1 font-mono uppercase font-bold">
+                      <p className="text-[10px] text-zinc-700 mt-1 font-mono uppercase font-bold">
                         Case File: {shipmentId} • Generated {new Date().toLocaleDateString()}
                       </p>
                     </div>
@@ -2036,7 +2036,7 @@ fetch(url, {
                         </div>
 
                         <div>
-                          <span className="text-[9px] uppercase font-mono text-zinc-500 block tracking-wider leading-none mb-1 font-bold">
+                          <span className="text-[9px] uppercase font-mono text-zinc-700 block tracking-wider leading-none mb-1 font-bold">
                             Cargo Integrity Status
                           </span>
                           <strong className={`text-base font-bold tracking-tight uppercase block ${
@@ -2048,7 +2048,7 @@ fetch(url, {
                           }`}>
                             {analysisReport?.damage_assessment?.status?.replace("_", " ")}
                           </strong>
-                          <span className="text-[10px] text-zinc-600 font-sans mt-0.5 block leading-tight font-bold uppercase text-[9px] tracking-wide">
+                          <span className="text-[10px] text-zinc-800 font-sans mt-0.5 block leading-tight font-bold uppercase text-[9px] tracking-wide">
                             {analysisReport?.damage_assessment?.status === "TOTAL_LOSS"
                               ? "Spoiled / microbially contaminated."
                               : analysisReport?.damage_assessment?.status === "PARTIAL_DAMAGE"
@@ -2064,12 +2064,12 @@ fetch(url, {
                           <Coins className="w-7 h-7" />
                         </div>
                         <div>
-                          <span className="text-[9px] uppercase font-mono text-zinc-500 block tracking-wider leading-none mb-1 font-bold">
+                          <span className="text-[9px] uppercase font-mono text-zinc-700 block tracking-wider leading-none mb-1 font-bold">
                             Estimated Impairment Valuation
                           </span>
                           <strong className="text-xl font-black tracking-tight text-hd-ink block font-mono">
                             ${ (analysisReport?.damage_assessment?.estimated_loss_usd || 0)?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            <span className="text-xs font-normal text-zinc-500 ml-1">USD</span>
+                            <span className="text-xs font-normal text-zinc-700 ml-1">USD</span>
                           </strong>
                           {/* loss ratio bar */}
                           <div className="w-full bg-zinc-100 rounded-none h-2.5 mt-2 overflow-hidden border border-hd-line p-px">
@@ -2080,7 +2080,7 @@ fetch(url, {
                               style={{ width: `${Math.min(100, ( (analysisReport?.damage_assessment?.estimated_loss_usd || 0) / (commercialValue || 1)) * 100)}%` }}
                             ></div>
                           </div>
-                          <span className="text-[9px] text-zinc-500 font-mono mt-1 block font-bold uppercase">
+                          <span className="text-[9px] text-zinc-700 font-mono mt-1 block font-bold uppercase">
                             {(( (analysisReport?.damage_assessment?.estimated_loss_usd || 0) / (commercialValue || 1)) * 100).toFixed(1)}% / ${commercialValue.toLocaleString()} declared SLA
                           </span>
                         </div>
@@ -2090,7 +2090,7 @@ fetch(url, {
                     {/* Human-in-the-Loop Verification Dashboard */}
                     <div className="bg-zinc-50 border border-hd-line p-4 rounded-none mb-1 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[1px_1px_0px_rgba(20,20,20,1)]">
                       <div className="flex-1 text-left">
-                        <span className="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-wide block mb-0.5">
+                        <span className="text-[9px] font-mono font-bold text-zinc-700 uppercase tracking-wide block mb-0.5">
                           Harness Control: Human-in-the-Loop Gateway
                         </span>
                         <p className="text-xs text-hd-ink leading-tight font-sans font-semibold">
@@ -2186,7 +2186,7 @@ fetch(url, {
 
                     {/* Narrative Summary panel */}
                     <div className="bg-zinc-50 border border-hd-line p-4 rounded-none relative text-left">
-                      <div className="font-serif-georgia italic text-xs text-hd-ink/75 uppercase tracking-wider pb-1.5 mb-2 border-b border-hd-line/40 font-bold flex items-center gap-2">
+                      <div className="font-serif-georgia italic text-xs text-hd-ink uppercase tracking-wider pb-1.5 mb-2 border-b border-hd-line/40 font-bold flex items-center gap-2">
                         <span>Incident Synthesis & Settlement Narrative</span>
                       </div>
                       {isApproved ? (
@@ -2206,12 +2206,12 @@ fetch(url, {
 
                     {/* Biophysical asset degradation scientific explanation */}
                     <div id="scientific-reasoning-card" className="bg-zinc-50 border border-hd-line p-4 rounded-none text-left">
-                      <div className="font-serif-georgia italic text-xs text-hd-ink/75 uppercase tracking-wider pb-1.5 mb-2 border-b border-hd-line/40 font-bold flex items-center gap-2">
+                      <div className="font-serif-georgia italic text-xs text-hd-ink uppercase tracking-wider pb-1.5 mb-2 border-b border-hd-line/40 font-bold flex items-center gap-2">
                         <Activity className="w-3.5 h-3.5 text-rose-600" />
                         <span>Biological Spoilage Thermodynamics Analysis</span>
                       </div>
                       {isApproved ? (
-                        <p className="text-xs text-zinc-805 leading-relaxed font-sans whitespace-pre-line font-medium font-bold uppercase text-[9px] tracking-wide">
+                        <p className="text-xs text-hd-ink leading-relaxed font-sans whitespace-pre-line font-medium font-bold uppercase text-[9px] tracking-wide">
                           {editedScientificReasoning}
                         </p>
                       ) : (
@@ -2238,7 +2238,7 @@ fetch(url, {
                         </div>
                         {/* Visual liability pill */}
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-zinc-500 font-mono uppercase font-bold">Assigned fault:</span>
+                          <span className="text-[10px] text-zinc-700 font-mono uppercase font-bold">Assigned fault:</span>
                           <span className="text-[11px] font-mono font-bold bg-[#141414] text-white px-2 py-0.5 rounded-none uppercase">
                             {analysisReport?.liability_assignment?.liable_party} ({analysisReport?.liability_assignment?.fault_percentage}%)
                           </span>
@@ -2264,7 +2264,7 @@ fetch(url, {
                               style={{ width: `${analysisReport?.liability_assignment?.fault_percentage}%` }}
                             ></div>
                           </div>
-                          <div className="flex justify-between text-[9px] text-zinc-500 font-mono mt-1 font-bold uppercase">
+                          <div className="flex justify-between text-[9px] text-zinc-700 font-mono mt-1 font-bold uppercase">
                             <span>Safe (0%)</span>
                             <span>Co-proportional</span>
                             <span>100% Extreme negligence</span>
@@ -2273,10 +2273,10 @@ fetch(url, {
 
                         {/* Sensor evidence citations */}
                         <div className="bg-zinc-50 p-3 rounded-none border border-zinc-205">
-                          <span className="text-[9px] uppercase font-mono font-bold text-zinc-500 block mb-1.5">
+                          <span className="text-[9px] uppercase font-mono font-bold text-zinc-700 block mb-1.5">
                             Arbitration evidence & telemetry sensor trace logs
                           </span>
-                          <p id="evidence-text" className="text-xs text-zinc-805 leading-relaxed font-sans leading-relaxed font-medium">
+                          <p id="evidence-text" className="text-xs text-hd-ink leading-relaxed font-sans leading-relaxed font-medium">
                             {analysisReport?.liability_assignment?.evidence_citation}
                           </p>
                         </div>
@@ -2285,13 +2285,13 @@ fetch(url, {
 
                     {/* Sub-action items list */}
                     <div id="sub-action-items" className="bg-zinc-50 border border-hd-line p-4 rounded-none">
-                      <div className="font-serif-georgia italic text-xs text-hd-ink/75 uppercase tracking-wider pb-1.5 mb-2.5 border-b border-hd-line/40 font-bold flex items-center gap-2">
+                      <div className="font-serif-georgia italic text-xs text-hd-ink uppercase tracking-wider pb-1.5 mb-2.5 border-b border-hd-line/40 font-bold flex items-center gap-2">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-750" />
                         <span>Arbitration protocols & claimant guide action list</span>
                       </div>
                       <ul className="flex flex-col gap-2.5">
                         {analysisReport?.action_items.map((item, idx) => (
-                          <li key={idx} className="flex items-start gap-1.5 text-xs text-zinc-805 leading-relaxed font-medium">
+                          <li key={idx} className="flex items-start gap-1.5 text-xs text-hd-ink leading-relaxed font-medium">
                             <span className="text-red-700 font-mono select-none font-bold mt-0.5">{idx + 1}.</span>
                             <span>{item}</span>
                           </li>
@@ -2306,15 +2306,15 @@ fetch(url, {
                       </div>
                       <div>
                         <h3 className="text-hd-ink font-bold text-sm tracking-tight uppercase">Audit Claim Report Blocked</h3>
-                        <p className="text-xs text-zinc-650 max-w-sm mx-auto mt-2 leading-snug">
+                        <p className="text-xs text-zinc-800 max-w-sm mx-auto mt-2 leading-snug">
                           Modify the telemetry values on the left panel or click "Compile Compliance & Liability Assessment" above to run biological decay calculations, liability proportional blame, and evidentiary legal text on model logs.
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
-                        <span className="text-[10px] text-zinc-650 font-mono bg-white border border-hd-line px-2.5 py-1 rounded-none font-bold uppercase">
+                        <span className="text-[10px] text-zinc-800 font-mono bg-white border border-hd-line px-2.5 py-1 rounded-none font-bold uppercase">
                           Arrhenius thermal biological decay
                         </span>
-                        <span className="text-[10px] text-zinc-650 font-mono bg-white border border-hd-line px-2.5 py-1 rounded-none font-bold uppercase">
+                        <span className="text-[10px] text-zinc-800 font-mono bg-white border border-hd-line px-2.5 py-1 rounded-none font-bold uppercase">
                           0-2°C boundaries model active
                         </span>
                       </div>
@@ -2409,7 +2409,7 @@ fetch(url, {
                     <div className="lg:col-span-7 flex flex-col border border-hd-line bg-zinc-50 shadow-[1px_1px_0px_rgba(20,20,20,1)]">
                       <div className="bg-zinc-100 border-b border-hd-line px-4 py-2.5 flex items-center justify-between">
                         <span className="font-mono text-[10px] font-bold uppercase text-hd-ink flex items-center gap-1.5">
-                          <FileCode className="w-3.5 h-3.5 text-zinc-650" />
+                          <FileCode className="w-3.5 h-3.5 text-zinc-800" />
                           <span>PDF Original Document Viewer</span>
                         </span>
                         {activeHighlightCategory && (
@@ -2424,7 +2424,7 @@ fetch(url, {
                       <div className="p-4 overflow-y-auto max-h-[380px] min-h-[300px] bg-white border-b border-hd-line select-text text-left">
                         {renderHighlightedContractText()}
                       </div>
-                      <div className="p-3 text-[9px] font-mono text-zinc-500 uppercase leading-snug">
+                      <div className="p-3 text-[9px] font-mono text-zinc-700 uppercase leading-snug">
                         💡 Click a parsed term card on the left to highlight its source paragraph and see original contract wording.
                       </div>
                     </div>
@@ -2449,7 +2449,7 @@ fetch(url, {
                               <Activity className="w-3.5 h-3.5 text-red-600" />
                               <span>Cargo Damage Assessor (货损评估师)</span>
                             </h4>
-                            <p className="text-[9px] text-zinc-500 font-mono uppercase mt-0.5">
+                            <p className="text-[9px] text-zinc-700 font-mono uppercase mt-0.5">
                               Agent Role: cold-chain bio-physicist
                             </p>
                           </div>
@@ -2459,7 +2459,7 @@ fetch(url, {
                         </div>
 
                         <details className="mb-3 text-[10px] bg-zinc-50 border border-zinc-200 p-2 cursor-pointer select-none">
-                          <summary className="font-bold uppercase tracking-wider text-zinc-650 font-mono">
+                          <summary className="font-bold uppercase tracking-wider text-zinc-800 font-mono">
                             Show Agent Backstory & Goal
                           </summary>
                           <div className="mt-1.5 text-zinc-700 normal-case leading-normal">
@@ -2488,7 +2488,7 @@ fetch(url, {
                               <Scale className="w-3.5 h-3.5 text-hd-ink" />
                               <span>Liability Legal Officer (定责法务官)</span>
                             </h4>
-                            <p className="text-[9px] text-zinc-500 font-mono uppercase mt-0.5">
+                            <p className="text-[9px] text-zinc-700 font-mono uppercase mt-0.5">
                               Agent Role: supply chain counsel
                             </p>
                           </div>
@@ -2498,7 +2498,7 @@ fetch(url, {
                         </div>
 
                         <details className="mb-3 text-[10px] bg-zinc-50 border border-zinc-200 p-2 cursor-pointer select-none">
-                          <summary className="font-bold uppercase tracking-wider text-zinc-650 font-mono">
+                          <summary className="font-bold uppercase tracking-wider text-zinc-800 font-mono">
                             Show Agent Backstory & Goal
                           </summary>
                           <div className="mt-1.5 text-zinc-700 normal-case leading-normal">
@@ -2527,7 +2527,7 @@ fetch(url, {
                               <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
                               <span>Emergency Dispatcher (应急调度员)</span>
                             </h4>
-                            <p className="text-[9px] text-zinc-500 font-mono uppercase mt-0.5">
+                            <p className="text-[9px] text-zinc-700 font-mono uppercase mt-0.5">
                               Agent Role: crisis controller
                             </p>
                           </div>
@@ -2537,7 +2537,7 @@ fetch(url, {
                         </div>
 
                         <details className="mb-3 text-[10px] bg-zinc-50 border border-zinc-200 p-2 cursor-pointer select-none">
-                          <summary className="font-bold uppercase tracking-wider text-zinc-650 font-mono">
+                          <summary className="font-bold uppercase tracking-wider text-zinc-800 font-mono">
                             Show Agent Backstory & Goal
                           </summary>
                           <div className="mt-1.5 text-zinc-700 normal-case leading-normal">
@@ -2580,9 +2580,9 @@ fetch(url, {
                                   {conn.status}
                                 </span>
                               </div>
-                              <p className="text-[10px] text-zinc-650 leading-tight mb-3">{conn.desc}</p>
+                              <p className="text-[10px] text-zinc-800 leading-tight mb-3">{conn.desc}</p>
                             </div>
-                            <div className="bg-zinc-100 border border-zinc-200 p-1.5 font-mono text-[8px] text-zinc-500 overflow-x-auto select-all">
+                            <div className="bg-zinc-100 border border-zinc-200 p-1.5 font-mono text-[8px] text-zinc-700 overflow-x-auto select-all">
                               Key: {conn.apiKey}
                             </div>
                           </div>
@@ -2602,7 +2602,7 @@ fetch(url, {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse text-[11px] font-sans">
                             <thead>
-                              <tr className="border-b border-hd-line bg-zinc-50 text-zinc-600 font-mono text-[9px] uppercase font-bold">
+                              <tr className="border-b border-hd-line bg-zinc-50 text-zinc-800 font-mono text-[9px] uppercase font-bold">
                                 <th className="p-2.5">Origin</th>
                                 <th className="p-2.5">Shipment ID</th>
                                 <th className="p-2.5">Cargo Type</th>
@@ -2624,7 +2624,7 @@ fetch(url, {
                                     <td className="p-2.5 font-mono font-bold text-hd-ink uppercase">{evt.tms_system}</td>
                                     <td className="p-2.5 font-mono font-bold text-indigo-700">{evt.shipment_id}</td>
                                     <td className="p-2.5 text-zinc-700 font-medium">{evt.cargo_type}</td>
-                                    <td className="p-2.5 text-zinc-500 font-mono text-[10px]">
+                                    <td className="p-2.5 text-zinc-700 font-mono text-[10px]">
                                       {new Date(evt.received_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                     </td>
                                     <td className="p-2.5 text-center">
@@ -2663,7 +2663,7 @@ fetch(url, {
 
                         <div className="flex flex-col gap-3 text-xs mb-4">
                           <div>
-                            <label className="block text-[10px] font-mono uppercase font-bold text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-mono uppercase font-bold text-zinc-700 mb-1">
                               Simulated TMS Platform
                             </label>
                             <select
@@ -2679,7 +2679,7 @@ fetch(url, {
                           </div>
 
                           <div>
-                            <label className="block text-[10px] font-mono uppercase font-bold text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-mono uppercase font-bold text-zinc-700 mb-1">
                               Select Shipping Scenario
                             </label>
                             <select
@@ -2696,7 +2696,7 @@ fetch(url, {
                         </div>
 
                         <div className="flex-1 flex flex-col gap-1.5 mb-4">
-                          <label className="block text-[10px] font-mono uppercase font-bold text-zinc-500">
+                          <label className="block text-[10px] font-mono uppercase font-bold text-zinc-700">
                             Webhook Payload JSON Editor
                           </label>
                           <textarea
@@ -2734,7 +2734,7 @@ fetch(url, {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse text-[11px]">
                             <thead>
-                              <tr className="border-b border-hd-line bg-zinc-50 text-zinc-600 font-mono text-[9px] uppercase font-bold">
+                              <tr className="border-b border-hd-line bg-zinc-50 text-zinc-800 font-mono text-[9px] uppercase font-bold">
                                 <th className="p-2.5">Carrier</th>
                                 <th className="p-2.5 text-center">Score</th>
                                 <th className="p-2.5 text-center">Spoilage %</th>
@@ -2748,9 +2748,9 @@ fetch(url, {
                                 <tr key={idx} className="hover:bg-zinc-50 transition">
                                   <td className="p-2.5 font-bold text-hd-ink uppercase font-mono">{c.name}</td>
                                   <td className="p-2.5 text-center font-mono font-bold text-indigo-700">{c.score}</td>
-                                  <td className="p-2.5 text-center font-mono text-zinc-650">{c.spoilageRate}%</td>
-                                  <td className="p-2.5 text-center font-mono text-zinc-650">{c.tempDevs}</td>
-                                  <td className="p-2.5 text-center font-mono text-zinc-650">{c.shockCount}</td>
+                                  <td className="p-2.5 text-center font-mono text-zinc-800">{c.spoilageRate}%</td>
+                                  <td className="p-2.5 text-center font-mono text-zinc-800">{c.tempDevs}</td>
+                                  <td className="p-2.5 text-center font-mono text-zinc-800">{c.shockCount}</td>
                                   <td className="p-2.5 text-right font-mono font-bold">
                                     <span className={`px-1.5 py-0.5 border text-[9px] ${
                                       c.grade.startsWith("A") 
@@ -2779,7 +2779,7 @@ fetch(url, {
                           
                           <div className="flex flex-col gap-3 text-xs">
                             <div>
-                              <label className="block text-[9px] font-mono uppercase font-bold text-zinc-500 mb-1">Carrier selection</label>
+                              <label className="block text-[9px] font-mono uppercase font-bold text-zinc-700 mb-1">Carrier selection</label>
                               <select
                                 value={calcCarrier}
                                 onChange={(e) => setCalcCarrier(e.target.value)}
@@ -2790,7 +2790,7 @@ fetch(url, {
                             </div>
 
                             <div>
-                              <label className="block text-[9px] font-mono uppercase font-bold text-zinc-500 mb-1">Transit lane</label>
+                              <label className="block text-[9px] font-mono uppercase font-bold text-zinc-700 mb-1">Transit lane</label>
                               <select
                                 value={calcLane}
                                 onChange={(e) => setCalcLane(e.target.value)}
@@ -2801,7 +2801,7 @@ fetch(url, {
                             </div>
 
                             <div>
-                              <label className="block text-[9px] font-mono uppercase font-bold text-zinc-500 mb-1">Cargo classification</label>
+                              <label className="block text-[9px] font-mono uppercase font-bold text-zinc-700 mb-1">Cargo classification</label>
                               <select
                                 value={calcCargoType}
                                 onChange={(e) => setCalcCargoType(e.target.value)}
@@ -2815,7 +2815,7 @@ fetch(url, {
                             </div>
 
                             <div>
-                              <label className="block text-[9px] font-mono uppercase font-bold text-zinc-500 mb-1">Cargo Insured Value ($USD)</label>
+                              <label className="block text-[9px] font-mono uppercase font-bold text-zinc-700 mb-1">Cargo Insured Value ($USD)</label>
                               <input
                                 type="range"
                                 min={10000}
@@ -2825,7 +2825,7 @@ fetch(url, {
                                 onChange={(e) => setCalcCargoValue(Number(e.target.value))}
                                 className="w-full h-1 bg-zinc-200 accent-red-650 mt-1 cursor-pointer"
                               />
-                              <div className="flex justify-between items-center mt-1 font-mono text-[9px] text-zinc-500 font-bold">
+                              <div className="flex justify-between items-center mt-1 font-mono text-[9px] text-zinc-700 font-bold">
                                 <span>$10K</span>
                                 <span className="text-hd-ink text-xs font-bold">${calcCargoValue.toLocaleString()} USD</span>
                                 <span>$1M</span>
@@ -2835,11 +2835,11 @@ fetch(url, {
                         </div>
 
                         <div className="bg-zinc-50 border border-zinc-200 p-3.5 rounded-none mt-4 font-mono">
-                          <div className="flex justify-between items-center border-b border-zinc-200 pb-1.5 mb-1.5 text-[9px] font-bold text-zinc-500 uppercase">
+                          <div className="flex justify-between items-center border-b border-zinc-200 pb-1.5 mb-1.5 text-[9px] font-bold text-zinc-700 uppercase">
                             <span>Premium rate:</span>
                             <span className="text-hd-ink text-[11px]">{calculatePremium().rate}%</span>
                           </div>
-                          <div className="flex justify-between items-center border-b border-zinc-200 pb-1.5 mb-1.5 text-[9px] font-bold text-zinc-500 uppercase">
+                          <div className="flex justify-between items-center border-b border-zinc-200 pb-1.5 mb-1.5 text-[9px] font-bold text-zinc-700 uppercase">
                             <span>Policy Cost:</span>
                             <span className="text-red-750 text-sm font-bold">${calculatePremium().premiumUsd.toLocaleString()} USD</span>
                           </div>
@@ -2863,7 +2863,7 @@ fetch(url, {
                       <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse text-[11px]">
                           <thead>
-                            <tr className="border-b border-hd-line bg-zinc-50 text-zinc-600 font-mono text-[9px] uppercase font-bold">
+                            <tr className="border-b border-hd-line bg-zinc-50 text-zinc-800 font-mono text-[9px] uppercase font-bold">
                               <th className="p-2.5">Shipping lane</th>
                               <th className="p-2.5 text-center">Avg Temp Breach (°C)</th>
                               <th className="p-2.5 text-center">Avg Shock Freq / Trip</th>
@@ -2875,8 +2875,8 @@ fetch(url, {
                             {ROUTES_DATA.map((r, idx) => (
                               <tr key={idx} className="hover:bg-zinc-50 transition">
                                 <td className="p-2.5 font-bold text-hd-ink uppercase font-mono">{r.lane}</td>
-                                <td className="p-2.5 text-center font-mono text-zinc-650">+{r.avgTempBreach}°C</td>
-                                <td className="p-2.5 text-center font-mono text-zinc-650">{r.shockFreq} shocks</td>
+                                <td className="p-2.5 text-center font-mono text-zinc-800">+{r.avgTempBreach}°C</td>
+                                <td className="p-2.5 text-center font-mono text-zinc-800">{r.shockFreq} shocks</td>
                                 <td className="p-2.5 text-center font-mono font-bold text-indigo-700">{r.multiplier}x</td>
                                 <td className="p-2.5 text-right font-mono font-bold">
                                   <span className={`px-1.5 py-0.5 text-[8px] font-bold rounded-none uppercase ${
@@ -2914,7 +2914,7 @@ fetch(url, {
                           {auditChain.length > 0 ? (
                             <table className="w-full text-left border-collapse text-[10px] font-mono">
                               <thead>
-                                <tr className="border-b border-hd-line bg-zinc-50 text-zinc-600 text-[9px] uppercase font-bold">
+                                <tr className="border-b border-hd-line bg-zinc-50 text-zinc-800 text-[9px] uppercase font-bold">
                                   <th className="p-2.5">Shipment ID</th>
                                   <th className="p-2.5">Registered Timestamp</th>
                                   <th className="p-2.5">PDF Hash</th>
@@ -2926,11 +2926,11 @@ fetch(url, {
                                 {auditChain.map((entry, idx) => (
                                   <tr key={idx} className="hover:bg-zinc-50 transition">
                                     <td className="p-2.5 font-bold text-hd-ink font-mono">{entry.shipment_id}</td>
-                                    <td className="p-2.5 text-zinc-500 font-mono">{new Date(entry.timestamp).toLocaleString()}</td>
-                                    <td className="p-2.5 font-mono text-zinc-650" title={entry.pdf_hash}>
+                                    <td className="p-2.5 text-zinc-700 font-mono">{new Date(entry.timestamp).toLocaleString()}</td>
+                                    <td className="p-2.5 font-mono text-zinc-800" title={entry.pdf_hash}>
                                       {entry.pdf_hash ? `${entry.pdf_hash.slice(0, 8)}...` : "N/A"}
                                     </td>
-                                    <td className="p-2.5 font-mono text-zinc-650" title={entry.combined_hash}>
+                                    <td className="p-2.5 font-mono text-zinc-800" title={entry.combined_hash}>
                                       {entry.combined_hash ? `${entry.combined_hash.slice(0, 10)}...` : "N/A"}
                                     </td>
                                     <td className="p-2.5 text-right">
@@ -2945,7 +2945,7 @@ fetch(url, {
                           ) : (
                             <div className="py-12 text-center text-zinc-400 italic text-xs">
                               No registered cryptographic seals found in the local ledger.
-                              <p className="mt-1 text-[10px] text-zinc-500 uppercase font-mono font-normal">
+                              <p className="mt-1 text-[10px] text-zinc-700 uppercase font-mono font-normal">
                                 Audited shipments will automatically save their SHA-256 seals here.
                               </p>
                             </div>
@@ -2963,7 +2963,7 @@ fetch(url, {
                           
                           <div className="flex flex-col gap-4 text-xs font-sans mt-3">
                             <div className="bg-zinc-50 border border-zinc-200 p-3 rounded-none">
-                              <span className="text-[9px] font-mono uppercase font-bold text-zinc-500 block mb-1">
+                              <span className="text-[9px] font-mono uppercase font-bold text-zinc-700 block mb-1">
                                 Verification Context
                               </span>
                               <p className="text-[10px] leading-tight text-hd-ink font-semibold">
@@ -2985,7 +2985,7 @@ fetch(url, {
                               <span className="block text-[10px] font-mono uppercase font-bold text-hd-ink">
                                 {verifying ? "Computing PDF Fingerprint..." : "Upload Official PDF Report"}
                               </span>
-                              <span className="block text-[9px] text-zinc-500 mt-1">
+                              <span className="block text-[9px] text-zinc-700 mt-1">
                                 Supports .pdf claims document
                               </span>
                             </div>
@@ -3025,7 +3025,7 @@ fetch(url, {
                                 </div>
 
                                 <div className="bg-zinc-900 text-[9px] font-mono text-zinc-350 p-3 rounded-none overflow-x-auto select-all leading-normal flex flex-col gap-1 text-left">
-                                  <span className="text-zinc-500 font-bold block uppercase border-b border-zinc-800 pb-1 mb-1">
+                                  <span className="text-zinc-700 font-bold block uppercase border-b border-zinc-800 pb-1 mb-1">
                                     SHA-256 Hashing Fingerprints:
                                   </span>
                                   <div className="flex justify-between">
@@ -3050,7 +3050,7 @@ fetch(url, {
                                           {verificationResult.stored_hashes.terms_hash?.slice(0, 16)}...
                                         </span>
                                       </div>
-                                      <div className="flex justify-between mt-1 border-t border-zinc-800 pt-1 uppercase text-[8px] font-bold text-zinc-500">
+                                      <div className="flex justify-between mt-1 border-t border-zinc-800 pt-1 uppercase text-[8px] font-bold text-zinc-700">
                                         <span>Combined Seal:</span>
                                         <span className="text-white">{verificationResult.stored_hashes.combined_hash?.slice(0, 20)}...</span>
                                       </div>
@@ -3074,7 +3074,7 @@ fetch(url, {
 
                 {/* Legal Disclaimer / Code Block */}
                 {analysisReport && activeTab !== "tms" && activeTab !== "analytics" && activeTab !== "verification" && (
-                  <div className="mt-2 text-[9px] font-mono text-zinc-500 leading-normal border-t border-zinc-200 pt-4 flex flex-col md:flex-row items-center justify-between gap-2 uppercase font-bold">
+                  <div className="mt-2 text-[9px] font-mono text-zinc-700 leading-normal border-t border-zinc-200 pt-4 flex flex-col md:flex-row items-center justify-between gap-2 uppercase font-bold">
                     <span>ChainGuard AI automated legally-defensible log analyzer • Ref Code: SHELF_LIFE_Arrhenius_3.5</span>
                     <span>CONFIDENTIAL INSURANCE FILING SPECIFIED</span>
                   </div>
@@ -3095,7 +3095,7 @@ fetch(url, {
           {showCode && (
             <section id="developer-code-panel" className="bg-white border border-hd-line p-5 rounded-none shadow-[2px_2px_0px_rgba(20,20,20,1)] flex flex-col">
               <div className="flex items-center justify-between border-b border-hd-line pb-2 mb-3">
-                <div className="font-serif-georgia italic text-xs text-hd-ink/70 uppercase tracking-wider flex items-center gap-1.5 font-bold">
+                <div className="font-serif-georgia italic text-xs text-hd-ink uppercase tracking-wider flex items-center gap-1.5 font-bold">
                   <FileCode className="w-3.5 h-3.5 text-indigo-650" />
                   <span>Developer API Code</span>
                 </div>
@@ -3107,7 +3107,7 @@ fetch(url, {
                 </button>
               </div>
               
-              <p className="text-[10px] text-zinc-500 mb-3 leading-tight uppercase font-bold font-mono">
+              <p className="text-[10px] text-zinc-700 mb-3 leading-tight uppercase font-bold font-mono">
                 Reproduce this analysis call via API in your own client application:
               </p>
               
@@ -3150,21 +3150,21 @@ fetch(url, {
               {/* Model Accuracy Performance Metrics */}
               {evalResults && (
                 <div className="mt-5 pt-4 border-t border-hd-line text-left flex flex-col gap-2">
-                  <div className="font-serif-georgia italic text-[11px] text-hd-ink/75 uppercase tracking-wider font-bold flex items-center gap-1.5 mb-1">
+                  <div className="font-serif-georgia italic text-[11px] text-hd-ink uppercase tracking-wider font-bold flex items-center gap-1.5 mb-1">
                     <TrendingUp className="w-3.5 h-3.5 text-emerald-650" />
                     <span>CrewAI Model Performance Metrics</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-center mb-2 font-mono">
                     <div className="bg-zinc-50 border border-hd-line p-2">
-                      <span className="text-[7px] text-zinc-500 uppercase block font-bold">Accuracy</span>
+                      <span className="text-[7px] text-zinc-700 uppercase block font-bold">Accuracy</span>
                       <span className="text-xs font-black text-emerald-650">{evalResults.accuracy_rate}</span>
                     </div>
                     <div className="bg-zinc-50 border border-hd-line p-2">
-                      <span className="text-[7px] text-zinc-500 uppercase block font-bold">Loss Error</span>
+                      <span className="text-[7px] text-zinc-700 uppercase block font-bold">Loss Error</span>
                       <span className="text-xs font-black text-emerald-650">{evalResults.average_deviation_error}</span>
                     </div>
                     <div className="bg-zinc-50 border border-hd-line p-2">
-                      <span className="text-[7px] text-zinc-500 uppercase block font-bold">Avg Latency</span>
+                      <span className="text-[7px] text-zinc-700 uppercase block font-bold">Avg Latency</span>
                       <span className="text-xs font-black text-hd-ink">{evalResults.avg_latency_sec}s</span>
                     </div>
                   </div>
@@ -3184,7 +3184,7 @@ fetch(url, {
                         </div>
                         <div className="text-zinc-400 text-[8px] flex justify-between">
                           <span>Blame: expected {res.expected_party}, got {res.actual_party}</span>
-                          <span className="text-zinc-500 font-bold">{res.latency_sec}s</span>
+                          <span className="text-zinc-700 font-bold">{res.latency_sec}s</span>
                         </div>
                         <div className="text-zinc-400 text-[8px]">
                           Loss Dev: expected ${res.expected_loss.toLocaleString()}, got ${res.actual_loss.toLocaleString()} (err: {res.deviation_pct})
@@ -3200,7 +3200,7 @@ fetch(url, {
           {showAssistant && (
             <section id="interactive-assistant-panel" className="bg-white border border-hd-line p-5 rounded-none shadow-[2px_2px_0px_rgba(20,20,20,1)] flex flex-col min-h-[400px]">
               <div className="flex items-center justify-between border-b border-hd-line pb-2 mb-3">
-                <div className="font-serif-georgia italic text-xs text-hd-ink/70 uppercase tracking-wider flex items-center gap-1.5 font-bold">
+                <div className="font-serif-georgia italic text-xs text-hd-ink uppercase tracking-wider flex items-center gap-1.5 font-bold">
                   <Sparkles className="w-3.5 h-3.5 text-amber-650" />
                   <span>Gemini AI Assistant</span>
                 </div>
@@ -3212,7 +3212,7 @@ fetch(url, {
                 </button>
               </div>
               
-              <p className="text-[10px] text-zinc-500 mb-3 leading-tight uppercase font-bold font-mono">
+              <p className="text-[10px] text-zinc-700 mb-3 leading-tight uppercase font-bold font-mono">
                 Ask questions about liability allocations, telemetry charts, or RAG insurance terms:
               </p>
 
@@ -3240,7 +3240,7 @@ fetch(url, {
                     <span className="text-[8px] font-mono font-bold text-zinc-400 uppercase mb-0.5">
                       Assistant is thinking...
                     </span>
-                    <div className="p-2.5 bg-white border border-zinc-300 text-xs text-zinc-500 flex items-center gap-2">
+                    <div className="p-2.5 bg-white border border-zinc-300 text-xs text-zinc-700 flex items-center gap-2">
                       <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
@@ -3276,7 +3276,7 @@ fetch(url, {
     </main>
 
       {/* Footer Info */}
-      <footer className="border-t border-hd-line bg-hd-bg py-6 px-1 text-center text-[10px] font-mono text-zinc-600 mt-12 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-hd-line mb-6 uppercase tracking-wider font-bold">
+      <footer className="border-t border-hd-line bg-hd-bg py-6 px-1 text-center text-[10px] font-mono text-zinc-800 mt-12 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-hd-line mb-6 uppercase tracking-wider font-bold">
         <p>© 2026 ChainGuard AI Logistics. All biological telemetry assets monitored securely.</p>
         <div className="flex items-center gap-4">
           <span>Secure AES Endpoint HTTPS</span>

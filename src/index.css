@@ -9,6 +9,21 @@
   --color-primary-500: #3b82f6;
   --color-primary-600: #2563eb;
   --color-primary-700: #1d4ed8;
+  
+  /* High Density Professional Theme Colors */
+  --color-hd-bg: #ffffff;
+  --color-hd-ink: #1a1a1b;
+  --color-hd-line: #000000;
+  --color-zinc-150: #ececec;
+  --color-zinc-205: #d4d4d8;
+  --color-zinc-350: #a1a1aa;
+  --color-zinc-805: #18181b;
+  --color-red-650: #b91c1c;
+  --color-red-750: #991b1b;
+  --color-amber-650: #d97706;
+  --color-emerald-650: #059669;
+  --color-emerald-750: #047857;
+  --color-indigo-650: #4f46e5;
 }
 
 @layer base {
