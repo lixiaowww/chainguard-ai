@@ -19,13 +19,18 @@ const SYSTEM_INSTRUCTION = `你是一个顶级的“全球冷链审计与货损�
 1. **生物物理分析**: 利用 Arrhenius 方程分析货物腐败率和剩余保质期。
 2. **法律合规判定**: 严格比对合同 SLA 和国际公约条款。
 3. **责任判定 (Fault Allocation)**: 明确承运人、托运人或港口的责任百分比。
-4. **行动建议**: 提供紧急冷藏、货物拒收或理赔申请的专业指导。
+4. **专家团对抗辩论 (Expert Panel)**: 
+   - 使用 HTML <div> 标签为 **生物物理学家**、**海运/空运律师**、**保险公估师** 建立独立的视觉卡片。
+   - 每个专家的意见应包含【专业评价】和【证据引用】。
 
-### 输出报告结构:
+### 输出报告结构 (HTML + Markdown):
 1. **审计官简报**: 事故定性分析。
 2. **遥测数据证据链**: 引用传感器时间戳和异常值。
-3. **法律判定依据**: 引用具体公约条款（SDR 赔偿限额计算）。
-4. **理赔与处置建议**: 方案 A (紧急抢救) 与 方案 B (正式索赔)。`;
+3. **专家团辩论记录 (Expert Panel)**: 三方专家的深度专业博弈过程。
+4. **合规性评分 (Compliance Score)**:
+   - 包含温控完整性、物理稳定性、运输时效性、SLA 合规度、法律免责风险、货损价值估算六个维度。
+5. **最终理赔结论**: [CLEAR / WARNING / CLAIM_PENDING / TOTAL_LOSS]
+6. **行动建议**: 方案 A (紧急抢救) 与 方案 B (正式索赔)。`;
 
 /**
  * 辅助函数：尝试从 GitHub URL 获取 README
@@ -500,7 +505,7 @@ Return ONLY this JSON object.`;
     }
 
     try {
-      const prompt = `你是一个结构化数据提取专家。请基于以下商业评估报告，提取出各维度的分数以及置信度信息。
+      const prompt = `你是一个结构化数据提取专家。请基于以下冷链审计报告，提取出各维度的分数以及置信度信息。
 必须返回且仅返回一个符合以下结构的 JSON 对象：
 {
   "confidence": {
@@ -509,12 +514,12 @@ Return ONLY this JSON object.`;
     "reason": "置信度理由"
   },
   "dimensions": {
-    "demand": { "score": 0-100, "reason": "需求评分理由" },
-    "competition": { "score": 0-100, "reason": "竞争评分理由" },
-    "monetization": { "score": 0-100, "reason": "变现评分理由" },
-    "distribution": { "score": 0-100, "reason": "分发评分理由" },
-    "retention": { "score": 0-100, "reason": "留存评分理由" },
-    "founder_market_fit": { "score": 0-100, "reason": "创始人匹配度评分理由" }
+    "thermal_integrity": { "score": 0-100, "reason": "温控得分理由" },
+    "physical_stability": { "score": 0-100, "reason": "物理冲击得分理由" },
+    "transit_velocity": { "score": 0-100, "reason": "运输时效得分理由" },
+    "sla_compliance": { "score": 0-100, "reason": "合同合规得分理由" },
+    "exemption_risk": { "score": 0-100, "reason": "法律免责得分理由" },
+    "loss_mitigation": { "score": 0-100, "reason": "货损评估得分理由" }
   }
 }
 
@@ -535,14 +540,13 @@ ${reportText}`;
 
       const parsed = JSON.parse(text);
 
-      // 使用 ValidationService 计算真正的最终评分和结论（多维度地板惩罚算法）
       const dimInput: any = {
-        demand: { score: parsed.dimensions?.demand?.score ?? 0, reason: parsed.dimensions?.demand?.reason ?? '', evidence: [] },
-        competition: { score: parsed.dimensions?.competition?.score ?? 0, reason: parsed.dimensions?.competition?.reason ?? '', evidence: [] },
-        monetization: { score: parsed.dimensions?.monetization?.score ?? 0, reason: parsed.dimensions?.monetization?.reason ?? '', evidence: [] },
-        distribution: { score: parsed.dimensions?.distribution?.score ?? 0, reason: parsed.dimensions?.distribution?.reason ?? '', evidence: [] },
-        retention: { score: parsed.dimensions?.retention?.score ?? 0, reason: parsed.dimensions?.retention?.reason ?? '', evidence: [] },
-        founder_market_fit: { score: parsed.dimensions?.founder_market_fit?.score ?? 0, reason: parsed.dimensions?.founder_market_fit?.reason ?? '', evidence: [] }
+        thermal_integrity: { score: parsed.dimensions?.thermal_integrity?.score ?? 0, reason: parsed.dimensions?.thermal_integrity?.reason ?? '', evidence: [] },
+        physical_stability: { score: parsed.dimensions?.physical_stability?.score ?? 0, reason: parsed.dimensions?.physical_stability?.reason ?? '', evidence: [] },
+        transit_velocity: { score: parsed.dimensions?.transit_velocity?.score ?? 0, reason: parsed.dimensions?.transit_velocity?.reason ?? '', evidence: [] },
+        sla_compliance: { score: parsed.dimensions?.sla_compliance?.score ?? 0, reason: parsed.dimensions?.sla_compliance?.reason ?? '', evidence: [] },
+        exemption_risk: { score: parsed.dimensions?.exemption_risk?.score ?? 0, reason: parsed.dimensions?.exemption_risk?.reason ?? '', evidence: [] },
+        loss_mitigation: { score: parsed.dimensions?.loss_mitigation?.score ?? 0, reason: parsed.dimensions?.loss_mitigation?.reason ?? '', evidence: [] }
       };
 
       const calcResult = ValidationService.calculateFinalScore(

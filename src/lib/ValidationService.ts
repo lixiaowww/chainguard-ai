@@ -1,127 +1,102 @@
 
 /**
- * ValidationService.ts
- * 融合了 JTBD 联网搜索能力与 Idea-Validation-Agents 专业评分方法论的核心服务。
+ * ValidationService.ts - ChainGuard AI Professional Edition
+ * 核心功能：基于生物物理退化速率、国际公约合规性、以及多维度责任判定的审计算法。
  */
 
 export interface DimensionScore {
-  score: number;
+  score: number; // 0-100, 代表合规度/稳定性（分数越低，损坏/过失越严重）
   reason: string;
-  uncertaintyRange?: [number, number]; // [min, max] 代表由于信息缺口导致的分值波动
+  uncertaintyRange?: [number, number]; 
   evidence: { text: string; source?: string }[];
 }
 
 export interface ValidationContext {
-  idea: string;
-  competitors: string;
-  searchData?: any;
-  isCuriosityEnabled?: boolean;
+  shipmentId: string;
+  commodity: string;
   confidence: {
     score: number;
     level: 'high' | 'medium' | 'low';
     reason: string;
   };
-  curiosityFindings?: {
-    criticalUnknowns: string[];
-    failureModes: string[];
-    contradictorySignals: string[];
-  };
   dimensions: {
-    demand: DimensionScore;
-    competition: DimensionScore;
-    monetization: DimensionScore;
-    distribution: DimensionScore;
-    retention: DimensionScore;
-    founder_market_fit: DimensionScore;
-  };
-}
-
-export interface RAT {
-  assumption: string;
-  category: string;
-  criticality: number;
-  uncertainty: number;
-  experiment: {
-    type: string;
-    description: string;
-    pass_threshold: string;
+    thermal_integrity: DimensionScore;   // 温控完整性（是否维持在 SLA 范围内）
+    physical_stability: DimensionScore;  // 物理稳定性（震动、冲击、倾斜）
+    transit_velocity: DimensionScore;    // 运输时效（是否在生命周期内到达）
+    sla_compliance: DimensionScore;      // 合同合规（是否满足特定 SLA 条款）
+    exemption_risk: DimensionScore;      // 法律免责风险（是否存在海关、不可抗力等）
+    loss_mitigation: DimensionScore;     // 损毁程度评估
   };
 }
 
 export class ValidationService {
   /**
-   * 核心算法：乘法地板逻辑 (Multiplicative Floor Algorithm)
-   * 任何一个维度低于 25 分都会产生指数级的惩罚。
+   * 货损定责核心算法：多维度加权地板惩罚
+   * 如果温控或物理冲击出现灾难性偏差（低于 25 分），将直接判定为重大过失。
    */
   static calculateFinalScore(dimensions: ValidationContext['dimensions'], confidenceScore: number = 100) {
     const weights = {
-      demand: 0.20,
-      competition: 0.10,
-      monetization: 0.20,
-      distribution: 0.20,
-      retention: 0.15,
-      founder_market_fit: 0.15
+      thermal_integrity: 0.30,
+      physical_stability: 0.15,
+      transit_velocity: 0.15,
+      sla_compliance: 0.20,
+      exemption_risk: 0.10,
+      loss_mitigation: 0.10
     };
 
-    let baseScore = 0;
-    let floorPenalty = 1.0;
+    let baseComplianceScore = 0;
+    let faultMultiplier = 1.0;
 
     for (const [key, dim] of Object.entries(dimensions)) {
       const weight = (weights as any)[key];
-      baseScore += dim.score * weight;
+      baseComplianceScore += dim.score * weight;
 
+      // 重大事故惩罚逻辑
       if (dim.score < 25) {
-        floorPenalty *= (dim.score / 25);
+        faultMultiplier *= (dim.score / 25);
       }
     }
 
-    // 置信度对总分的影响：如果置信度极低，最终得分应当被“打折”，以反映数据的不确定性
     const confidenceDiscount = confidenceScore / 100;
-    const finalScore = Math.round(Math.min(100, Math.max(0, baseScore * floorPenalty * confidenceDiscount)));
+    const finalScore = Math.round(Math.min(100, Math.max(0, baseComplianceScore * faultMultiplier * confidenceDiscount)));
     
-    let verdict: 'pursue' | 'test' | 'pivot' | 'drop' = 'drop';
-    if (finalScore >= 75) verdict = 'pursue';
-    else if (finalScore >= 55) verdict = 'test';
-    else if (finalScore >= 35) verdict = 'pivot';
+    // 判定结论：CLEAR (正常) | WARNING (异常) | CLAIM_PENDING (建议理赔) | TOTAL_LOSS (推定全损)
+    let verdict: 'clear' | 'warning' | 'claim_pending' | 'total_loss' = 'total_loss';
+    if (finalScore >= 85) verdict = 'clear';
+    else if (finalScore >= 65) verdict = 'warning';
+    else if (finalScore >= 40) verdict = 'claim_pending';
 
-    return { finalScore, floorPenalty, verdict, confidenceDiscount };
+    return { finalScore, faultMultiplier, verdict, confidenceDiscount };
   }
 
-  /**
-   * 生成系统指令，指导 Gemini 如何从搜索结果中提取这些维度的数据
-   */
-  static getExtractionPrompt(idea: string, competitors: string) {
+  static getExtractionPrompt(shipmentData: string, contractTerms: string) {
     return `
 你是一个顶级的全球冷链审计专家，正在使用 ChainGuard AI 系统进行货损判定。
-请基于以下想法和搜索到的信号，输出结构化的 JSON 评估报告。
+请基于遥测数据和合同条款，输出结构化的 JSON 评估报告。
 
-想法: ${idea}
-竞品: ${competitors}
+遥测数据: ${shipmentData}
+合同条款: ${contractTerms}
 
 ### 评估要求：
-1. **置信度评分 (Confidence Score)**: 评估你掌握的信息量。如果搜索结果贫乏或想法太模糊，必须给低分并说明原因。
-2. **六维度评分**: Demand, Competition, Monetization, Distribution, Retention, Founder-Market Fit。
-3. **证据链 (Evidence Chain)**: 每个维度必须附带具体的证据（用户原话、具体的竞品功能、或搜索到的市场数据）。
+1. **置信度评分**: 基于传感器数据的完整性（如有无断流）。
+2. **六维度评分 (0-100, 越高代表越合规/健康)**:
+   - Thermal Integrity: 温控是否严格执行。
+   - Physical Stability: 冲击/G值是否在范围内。
+   - Transit Velocity: 是否延误。
+   - SLA Compliance: 是否违反了特定的保质期承诺。
+   - Exemption Risk: 是否存在合法的免责（如海关查验）。
+   - Loss Mitigation: 货物腐败率预测。
 
 ### 输出格式 (严格 JSON):
 {
-  "confidence": {
-    "score": 0-100,
-    "level": "high|medium|low",
-    "reason": "为什么给出这个置信度"
-  },
+  "confidence": { "score": 0-100, "level": "high|medium|low", "reason": "..." },
   "dimensions": {
-    "demand": {"score": number, "reason": "...", "evidence": [{"text": "...", "source": "..."}]},
-    "monetization": { ... },
+    "thermal_integrity": {"score": number, "reason": "...", "evidence": []},
+    "physical_stability": { ... },
     ...
   },
-  "riskiest_assumption": {
-    "assumption": "...",
-    "category": "...",
-    "criticality": 1-5,
-    "uncertainty": 1-5,
-    "experiment": { ... }
-  }
+  "verdict_summary": "一句话定责结论",
+  "audit_chain_seal": "基于数据生成的防篡改校验码建议"
 }
 `;
   }
