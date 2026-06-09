@@ -275,7 +275,7 @@ async def audit_shipment(
         }
 
         scorer = LiabilityScorer(shipment_data, terms)
-        result = scorer.run_debate_loop(mock=mock)
+        result = await scorer.run_debate_loop(mock=mock)
         
         # 5. Apply Output Guardrails (PII and Clamping)
         if "final_structured_report" in result:

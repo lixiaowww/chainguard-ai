@@ -34,11 +34,11 @@ class LiabilityScorer:
                         print(f"Error loading verified case {file}: {e}", file=sys.stderr)
         return cases
 
-    def run_debate_loop(self, mock=False):
+    async def run_debate_loop(self, mock=False):
         if mock:
             return self._run_mock_debate()
         else:
-            return self._run_live_debate()
+            return await self._run_live_debate()
 
     def _get_llm(self):
         if os.environ.get("DEEPSEEK_API_KEY"):
@@ -52,7 +52,7 @@ class LiabilityScorer:
             raise ValueError("Neither DEEPSEEK_API_KEY nor GEMINI_API_KEY environment variable is found.")
         return LLM(model="gemini/gemini-1.5-flash", api_key=api_key)
 
-    def _run_live_debate(self):
+    async def _run_live_debate(self):
         llm = self._get_llm()
 
         shipment_id = self.shipment_data.get("shipment_id", "N/A")
@@ -211,7 +211,7 @@ class LiabilityScorer:
             verbose=True
         )
         
-        crew.kickoff()
+        await crew.kickoff_async()
         
         # Compile final JSON structure using AI
         synthesis_prompt = f"""
