@@ -2,8 +2,11 @@ import os
 import sys
 from sqlalchemy import create_engine, text
 
-# Use the DIRECT_URL for migrations
-DATABASE_URL = "postgresql://postgres.vjmwknqdeilrvocimwsw:sean%40winnipeg%21@aws-1-ca-central-1.pooler.supabase.com:5432/postgres"
+# Use the DATABASE_URL from environment
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    print("Error: DATABASE_URL environment variable not set.")
+    sys.exit(1)
 
 def init_db():
     print(f"Connecting to remote Supabase database...")

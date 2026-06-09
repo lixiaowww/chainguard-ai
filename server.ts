@@ -16,11 +16,11 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 7860;
 app.use(express.json({ limit: "10mb" }));
 
 // Supabase client initialization
-const supabaseUrl = process.env.VITE_SUPABASE_URL || "https://vjmwknqdeilrvocimwsw.supabase.co";
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbXdrbnFkZWlscnZvY2ltd3N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NDcwNzYsImV4cCI6MjA5NjUyMzA3Nn0.QyWatsxgLI6bT-oNqq0SShWQvZSkRlP1EgzvHeJg4Ec";
-const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+const supabase = (supabaseUrl && supabaseAnonKey) ? createClient(supabaseUrl, supabaseAnonKey, {
   realtime: { transport: ws },
-});
+}) : null;
 
 // OpenAI / DeepSeek client
 const openai = new OpenAI({
