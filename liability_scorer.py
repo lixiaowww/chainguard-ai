@@ -306,13 +306,30 @@ class LiabilityScorer:
         incident_context = self.shipment_data.get("incident_context", "")
         telemetry = self.shipment_data.get("iot_telemetry_history", [])
         
-        is_cherries = "cherries" in cargo_type.lower()
-        is_pharma = "pharma" in cargo_type.lower() or "vaccine" in cargo_type.lower() or "insulin" in cargo_type.lower()
-        is_wine = "wine" in cargo_type.lower()
-        
-        has_temp_spike = any(pt.get("temperature", 0) > 10.0 for pt in telemetry)
-        has_critical_temp_spike = any(pt.get("temperature", 0) > 25.0 for pt in telemetry)
+        cargo_lower = cargo_type.lower()
+        is_cherries = "cherries" in cargo_lower
+        is_pharma = "pharma" in cargo_lower or "vaccine" in cargo_lower or "insulin" in cargo_lower
+        is_wine = "wine" in cargo_lower
+        is_seafood = any(k in cargo_lower for k in [
+            "seafood", "salmon", "tuna", "fish", "shrimp", "shellfish",
+            "prawn", "crab", "lobster", "scallop", "frozen"
+        ])
+
+        temps = [pt.get("temperature", 0) for pt in telemetry]
+        has_temp_spike = any(t > 10.0 for t in temps)
+        has_critical_temp_spike = any(t > 25.0 for t in temps)
         has_shock = any(pt.get("shock_g", 0) > 3.0 for pt in telemetry)
+
+        # Frozen cargo thaw detection: time above freezing under custody
+        thaw_hours = sum(
+            pt.get("duration_hours", 1)
+            for pt in telemetry
+            if pt.get("temperature", -99) > 0
+        )
+        carrier_during_thaw = any(
+            pt.get("temperature", -99) > 0 and pt.get("carrier_custody", True)
+            for pt in telemetry
+        )
         
         status = "NORMAL"
         loss = 0.0
@@ -354,6 +371,50 @@ class LiabilityScorer:
                 liable_party = "Carrier"
                 fault_pct = 90
                 evidence = "Mechanical impact sensor registered 5.2G shock at 04:00 PM during loading/unloading."
+
+        elif is_seafood:
+            peak_temp = max(temps) if temps else -99
+            if peak_temp >= 4.0 and thaw_hours >= 2:
+                status = "TOTAL_LOSS"
+                fault_pct = 100 if carrier_during_thaw else 60
+                liable_party = "Carrier" if carrier_during_thaw else "Shipper"
+                loss = commercial_value
+                scientific = (
+                    f"Frozen seafood thawed to {peak_temp:.1f}°C for ~{thaw_hours:.0f}h, "
+                    "far above the -10°C deep-frozen profile. Protein denaturation, drip-loss, "
+                    "and rapid bacterial growth (Arrhenius-accelerated) render the load unsalvageable."
+                )
+                evidence = (
+                    f"Reefer log shows temperature reaching {peak_temp:.1f}°C "
+                    f"for {thaw_hours:.0f}h during "
+                    f"{'carrier custody' if carrier_during_thaw else 'shipper handling'}."
+                )
+            elif peak_temp > 0:
+                status = "PARTIAL_DAMAGE"
+                fault_pct = 85 if carrier_during_thaw else 50
+                liable_party = "Carrier" if carrier_during_thaw else "Shipper"
+                loss = commercial_value * 0.5
+                scientific = (
+                    f"Frozen seafood rose to {peak_temp:.1f}°C, breaching the freezing threshold. "
+                    "Partial thaw causes drip-loss and texture degradation, downgrading market value."
+                )
+                evidence = (
+                    f"Telemetry confirms a thaw excursion to {peak_temp:.1f}°C above 0°C "
+                    "during transit."
+                )
+
+        # Generic fallback: any unhandled cargo with a clear excursion still gets a result
+        if status == "NORMAL" and (has_critical_temp_spike or has_temp_spike or has_shock or thaw_hours >= 2):
+            status = "PARTIAL_DAMAGE"
+            liable_party = "Carrier"
+            fault_pct = 75
+            peak = max(temps) if temps else 0
+            loss = commercial_value * 0.4
+            scientific = (
+                f"Telemetry shows an out-of-range excursion (peak {peak:.1f}°C / shock event). "
+                "Cumulative thermal/physical stress exceeded safe handling limits during transit."
+            )
+            evidence = "Sensor log confirms an excursion outside the contractual SLA window under carrier custody."
 
         assessor_txt = f"Cargo Damage Assessor Report:\nIntegrated telemetry analysis reveals cargo is in a state of {status}.\nLoss calculated: ${loss:.2f} USD.\nReasoning: {scientific}"
         legal_txt = f"Liability Legal Officer Report:\nLiability determined: {liable_party} is {fault_pct}% liable.\nContractual check: Deductible applied. Exclusions checked: {self.contract_terms.get('exclusions')}\nEvidence: {evidence}"
