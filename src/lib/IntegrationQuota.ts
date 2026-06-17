@@ -38,7 +38,8 @@ function saveStore(store: Record<string, QuotaRecord>) {
 }
 
 function quotaKey(apiKey: string): string {
-  return crypto.createHash("sha256").update(apiKey).digest("hex").slice(0, 16);
+  const material = apiKey || "hf-public";
+  return crypto.createHash("sha256").update(material).digest("hex").slice(0, 16);
 }
 
 export function checkIntegrationQuota(apiKey: string, includePdf: boolean): QuotaCheckResult {

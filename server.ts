@@ -247,7 +247,7 @@ app.post("/api/tms/webhook", async (req, res) => {
 // Integration API - Zapier / Make.com (API key + free tier quotas)
 app.post("/api/integrations/audit", requireApiKey, async (req, res) => {
   try {
-    const apiKey = req.headers["x-chainguard-api-key"] as string;
+    const apiKey = (req.headers["x-chainguard-api-key"] as string) || "hf-public";
     const includePdf = req.body.include_pdf === true;
 
     const quota = checkIntegrationQuota(apiKey, includePdf);
