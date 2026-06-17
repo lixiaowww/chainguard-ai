@@ -1,0 +1,10 @@
+🚨 Cold Chain Audit — {{Shipment Id}}
+
+Status: {{Damage Status}}
+Liable: {{Liable Party}} ({{Fault Percentage}}%)
+Loss: ${{Estimated Loss Usd}}
+
+Evidence: {{Evidence Citation}}
+
+---
+Powered by ChainGuard AI | Free tier {{Usage Audits}}/{{Usage Audit Limit}} audits this month

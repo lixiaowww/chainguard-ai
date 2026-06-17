@@ -6,7 +6,8 @@
   "scripts": {
     "test": "zapier test",
     "validate": "zapier validate",
-    "push": "zapier push"
+    "push": "zapier push",
+    "publish": "node scripts/publish.cjs"
   },
   "dependencies": {
     "zapier-platform-core": "17.7.0"

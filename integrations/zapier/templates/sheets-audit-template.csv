@@ -1,0 +1,2 @@
+shipment_id,cargo_type,commercial_value_usd,contract_type,incident_context,telemetry_json,include_pdf
+SH-SALMON-7781,Frozen Atlantic Salmon,42000,seafood,Reefer compressor fault under carrier custody,"[{""temperature"":-18,""carrier_custody"":true,""duration_hours"":2},{""temperature"":5,""carrier_custody"":true,""duration_hours"":4},{""temperature"":-15,""carrier_custody"":true,""duration_hours"":2}]",false

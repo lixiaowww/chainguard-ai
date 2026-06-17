@@ -67,22 +67,16 @@ cold chain, reefer, cargo claim, temperature excursion, freight claim, IoT logis
 
 ## Featured Zap Template (publish in Zapier template gallery)
 
-**Title:** Temperature Alert → Cold Chain Liability Audit → Slack
+**Title:** Google Sheet Row → Cold Chain Liability Audit → Slack
 
-**Description:** When a webhook or spreadsheet row reports a temperature excursion, ChainGuard instantly calculates liable party and estimated loss, then posts to your claims channel.
+**Description:** Add a shipment row to a Google Sheet; ChainGuard assigns liability and posts results to Slack. No IoT integration required—fastest path for SMB forwarders.
 
 **Steps:**
-1. **Trigger:** Webhooks by Zapier — Catch Hook (from IoT platform)
-2. **Action:** ChainGuard AI — Run Cold Chain Cargo Audit
-   - Map `shipment_id`, `cargo_type`, `commercial_value_usd`, `telemetry_json`
-   - Leave `include_pdf` = false (free summary)
-3. **Action:** Slack — Send Channel Message
-   ```
-   🚨 Cold Chain Alert: {{shipment_id}}
-   Liable: {{liable_party}} ({{fault_percentage}}%)
-   Est. Loss: ${{estimated_loss_usd}}
-   Evidence: {{evidence_citation}}
-   ```
+1. **Trigger:** Google Sheets — New Spreadsheet Row (import `templates/sheets-audit-template.csv`)
+2. **Action:** ChainGuard AI — Run Cold Chain Cargo Audit (map Sheet columns 1:1)
+3. **Action:** Slack — Send Channel Message (copy from `templates/slack-message.txt`)
+
+**Advanced:** Webhooks by Zapier — Catch Hook (IoT / TMS POST)
 
 ---
 
