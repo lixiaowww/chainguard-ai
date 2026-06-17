@@ -1,5 +1,5 @@
 ---
-title: ChainGuard AI Enterprise
+title: ChainGuard AI
 emoji: 🛡️
 colorFrom: indigo
 colorTo: blue
@@ -8,99 +8,87 @@ app_port: 7860
 pinned: false
 ---
 
-# 🛡️ ChainGuard AI: Perishable Cargo Audit & Compliance Engine
+# ChainGuard AI — Cold Chain Claim Evidence API
 
-**Live Demo** — Upload IoT telemetry + contract PDF → get Arrhenius spoilage analysis, liability assignment, and cryptographically sealed claim PDF in under 30 seconds.
+> **Not a licensed surveyor.** ChainGuard compiles first-party IoT data and contract terms into structured claim evidence for settlement negotiation.
 
-ChainGuard AI is a premium, enterprise-grade cold-chain compliance auditing, dynamic underwriting, and cryptographic verification platform. By merging bio-physical thermodynamics, international maritime/air carriage laws, multi-agent LLM arbitration, and cryptographic auditing, ChainGuard AI ensures trust and mitigates liability across global supply chains.
+This deployment powers the **Zapier / Make.com integration** and provides an interactive demo UI.
 
-### Try it now (3 built-in scenarios)
-1. **Cherries Customs Delay** — Port authority exemption dispute
-2. **mRNA Vaccine Cold Chain Breach** — Carrier equipment failure
-3. **Fine Burgundy Wine Shock** — Mechanical drop damage
-
-Click **Compile Compliance & Liability Assessment** → Download PDF → Verify in the Verification tab.
+**Live API base URL:** `https://lixiaowww-chainguard-ai.hf.space`
 
 ---
 
-## 🏗️ System Architecture
+## Quick Start (Zapier)
 
-The application is structured as a decoupled, multi-service architecture:
+1. Install the **ChainGuard AI** Zapier app (see `integrations/zapier/`)
+2. Connect with:
+   - **Base URL:** `https://lixiaowww-chainguard-ai.hf.space`
+   - **API Key:** your `CHAINGUARD_API_KEY` (set in Space Secrets below)
+3. Create a Zap:
 
-```mermaid
-graph TD
-    A[React 19 Frontend Web UI] -->|HTTP / API Proxy| B[Express TypeScript Gateway]
-    B -->|REST Requests| C[FastAPI Python Backend]
-    C -->|SQLAlchemy ORM| D[(SQLite DB: chainguard.db)]
-    C -->|ReportLab Engine| E[Claim PDF Generator]
-    C -->|Multi-Agent Debate Loop| F[CrewAI / Gemini 1.5 Flash]
+```
+IoT Webhook / Google Sheets row
+    → ChainGuard: Run Cold Chain Cargo Audit
+    → Slack / Gmail (liable_party, estimated_loss_usd, evidence_citation)
 ```
 
-- **Frontend (React 19 & Vite)**: Live IoT telemetry rendering, carrier performance ledgers, an interactive risk underwriting pricing console, and a drag-and-drop claim document verification portal.
-- **Gateway Server (Express & TypeScript)**: Handles client-side routing, static asset serving, and proxies REST API requests to the Python microservice.
-- **Audit Engine (FastAPI & Python)**: Enforces scientific calculators, dynamic legal solvers, generates official claim PDF reports, and manages ledger registrations.
-- **Database (SQLite)**: Persists audit seals and incoming transport events.
+### Free Tier
+
+| Feature | Limit |
+|---------|-------|
+| Summary audits (JSON) | 30 / month |
+| Sealed PDF reports | 5 / month |
+
+Summary mode returns liability party, fault %, loss estimate, and evidence citation — no PDF generated.
 
 ---
 
-## ⚡ Key Technical Features
+## API Reference
 
-### 1. Arrhenius Biophysical Spoilage Engine
-Enforces optimal temperature profiles and biological spoilage models in python:
-- **Cherries / Produce**: Optimal range `[0, 2]`°C. Accumulates shelf-life decay for heat excursions above `2`°C.
-- **Bananas / Tropical**: Optimal range `[13, 15]`°C. Chilling excursions below `13`°C trigger Arrhenius-based **chilling injury** decay.
-- **mRNA Vaccines / Pharma**: Optimal range `[2, 8]`°C. Excursions above `8`°C trigger decay, whereas freezing breaches below `0`°C trigger an **immediate `TOTAL_LOSS`** state.
-- **Telemetry Gap Interpolation**: If a telemetry gap exceeds `2 hours`, the system calculates temperature uncertainty intervals (lower/upper bounds) and flags them in the audit record.
+### `POST /api/integrations/audit`
 
-### 2. Dynamic Legal Conventions Solver
-Automatically calculates carrier liability caps based on transport mode and gross weight (SDR rate = `1.31 USD`):
-- **Air Freight (Montreal Convention Article 22)**: Caps liability at `22 SDR/kg` (~`$28.82 USD/kg`).
-- **Ocean Freight (Hague-Visby Rules)**: Caps liability at `2 SDR/kg` (~`$2.62 USD/kg`).
-- **PDF Report Customizer**: Sections are dynamically formatted to cite the appropriate treaty, display weights, and outline liability caps.
+Requires header: `X-ChainGuard-Api-Key`
 
-### 3. Cryptographic Verification & TSA Anchoring
-- **canonical Hashing**: Telemetry data arrays and extracted contract SLA terms are sorted and hashed using SHA-256 (`input_seal`).
-- **PDF Fingerprinting**: Generated PDF claim reports are hashed to prevent editing or tampering.
-- **TSA Ledger Anchoring**: Audit seals are registered in the local ledger database and stamped with a simulated public ledger timestamp block transaction hash (`anchored_tx_id`).
-- **Upload Verification**: Compliance officers can drag and drop claim PDFs into the portal to check them against the database ledger (`VERIFIED` vs `TAMPERED`).
+```json
+{
+  "shipment_id": "SH-2026-001",
+  "cargo_type": "Frozen Atlantic Salmon",
+  "commercial_value_usd": 45000,
+  "contract_pdf_path": "contracts/cherries_sla_agreement.pdf",
+  "incident_context": "Temperature spike during carrier custody",
+  "telemetry": [
+    { "timestamp": "2026-06-05T10:00:00Z", "temperature": 8.5, "carrier_custody": true }
+  ],
+  "include_pdf": false
+}
+```
+
+**Response fields:** `liable_party`, `fault_percentage`, `estimated_loss_usd`, `damage_status`, `evidence_citation`, `pdf_download_url` (if `include_pdf: true`), `usage`
 
 ---
 
-## 🚀 Getting Started
+## Interactive Demo
 
-### Prerequisites
-- Node.js (v18+)
-- Python (3.10+)
+Open this Space URL to test 3 built-in scenarios (cherries, pharma, wine) in the browser UI.
 
-### 1. Setup Environment
-Copy the example environment file:
-```bash
-cp .env.example .env
-```
-Ensure `DATABASE_URL` is set to `sqlite:///chainguard.db`.
+1. Select a scenario → **Compile Compliance & Liability Assessment**
+2. Download PDF → Verify in the Verification tab
 
-### 2. Install Dependencies
-**Node Gateway & UI**:
-```bash
-npm install
-```
+---
 
-**Python Backend**:
-Create a virtual environment and install packages:
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+## Space Secrets (Settings)
 
-### 3. Running the Servers
-Start the FastAPI Backend microservice (Port `8081`):
-```bash
-python3 api.py
-```
+| Secret | Required | Purpose |
+|--------|----------|---------|
+| `CHAINGUARD_API_KEY` | Yes (for Zapier) | Secures `/api/integrations/audit` |
+| `GEMINI_API_KEY` | Recommended | Multi-agent liability debate |
+| `FREE_MONTHLY_AUDITS` | Optional | Default `30` |
+| `FREE_MONTHLY_PDFS` | Optional | Default `5` |
 
-In a separate terminal, build and start the Express production server (Port `7860`):
-```bash
-npm run build
-npm run start
-```
+---
+
+## Architecture
+
+React UI + Express gateway (port 7860) → FastAPI audit engine (port 8081)
+
+Full docs: [GitHub](https://github.com/lixiaowww/chainguard-ai) · Zapier: `integrations/zapier/README.md`

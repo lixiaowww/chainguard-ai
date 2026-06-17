@@ -6,6 +6,7 @@ import OpenAI from "openai";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import ws from "ws";
+import { checkIntegrationQuota } from "./src/lib/IntegrationQuota";
 
 dotenv.config();
 
@@ -227,16 +228,53 @@ app.post("/api/analyze-telemetry", async (req, res) => {
   }
 });
 
-// TMS Webhook - Proxy to Python (Zapier / Make.com / TMS integrations)
-app.post("/api/tms/webhook", requireApiKey, async (req, res) => {
+// TMS Webhook - Proxy to Python (UI simulator + internal)
+app.post("/api/tms/webhook", async (req, res) => {
   try {
+    const body = { ...req.body, include_pdf: req.body.include_pdf !== false };
     const response = await fetch("http://localhost:8081/v1/tms/webhook", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify(body),
     });
     const result = await response.json();
-    res.json(result);
+    res.status(response.ok ? 200 : response.status).json(result);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Integration API - Zapier / Make.com (API key + free tier quotas)
+app.post("/api/integrations/audit", requireApiKey, async (req, res) => {
+  try {
+    const apiKey = req.headers["x-chainguard-api-key"] as string;
+    const includePdf = req.body.include_pdf === true;
+
+    const quota = checkIntegrationQuota(apiKey, includePdf);
+    if (!quota.allowed) {
+      res.status(429).json({ error: quota.message, usage: quota.usage });
+      return;
+    }
+
+    const payload = {
+      tms_system: req.body.tms_system || "Zapier",
+      event_type: req.body.event_type || "TEMPERATURE_ALERT",
+      shipment_id: req.body.shipment_id,
+      cargo_type: req.body.cargo_type,
+      commercial_value_usd: req.body.commercial_value_usd,
+      contract_pdf_path: req.body.contract_pdf_path || "contracts/cherries_sla_agreement.pdf",
+      incident_context: req.body.incident_context || "",
+      telemetry: req.body.telemetry,
+      include_pdf: includePdf,
+    };
+
+    const response = await fetch("http://localhost:8081/v1/tms/webhook", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    res.status(response.ok ? 200 : response.status).json({ ...result, usage: quota.usage, tier: "free" });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

@@ -308,6 +308,7 @@ class TMSWebhookPayload(BaseModel):
     contract_pdf_path: str
     incident_context: Optional[str] = None
     telemetry: list
+    include_pdf: bool = True
 
 @app.post("/v1/tms/webhook")
 def receive_tms_webhook(payload: TMSWebhookPayload):
@@ -325,6 +326,8 @@ def receive_tms_webhook(payload: TMSWebhookPayload):
                 full_pdf_path = os.path.join(contracts_dir, "pharma_global_transport.pdf")
             elif "wine" in contract_path:
                 full_pdf_path = os.path.join(contracts_dir, "wine_logistics_spec.pdf")
+            elif "seafood" in contract_path:
+                full_pdf_path = os.path.join(contracts_dir, "cherries_sla_agreement.pdf")
             else:
                 full_pdf_path = os.path.join(contracts_dir, "cherries_sla_agreement.pdf")
         
@@ -351,37 +354,40 @@ def receive_tms_webhook(payload: TMSWebhookPayload):
                 payload.commercial_value_usd
             )
         
-        # 6. Generate and save PDF server-side in tms_claims/
-        tms_claims_dir = os.path.join(os.getcwd(), "tms_claims")
-        os.makedirs(tms_claims_dir, exist_ok=True)
-        
-        telemetry_hash = compute_canonical_hash(sanitized_telemetry)
-        terms_hash = compute_canonical_hash(terms)
-        input_seal = hashlib.sha256(f"{telemetry_hash}:{terms_hash}".encode('utf-8')).hexdigest()
-        
-        pdf_payload = {
-            "shipment_id": payload.shipment_id,
-            "cargo_type": payload.cargo_type,
-            "commercial_value": payload.commercial_value_usd,
-            "extracted_terms": terms,
-            "report": result.get("final_structured_report", {}),
-            "input_seal": input_seal
-        }
-        pdf_bytes = generate_claim_pdf(pdf_payload)
-        
-        # Register in audit chain registry
-        register_audit_seal(
-            shipment_id=payload.shipment_id,
-            telemetry=sanitized_telemetry,
-            extracted_terms=terms,
-            pdf_bytes=pdf_bytes
-        )
-        
+        # 6. Optionally generate sealed PDF (free Zapier tier uses summary-only)
         clean_shipment_id = re.sub(r'[^a-zA-Z0-9.\-_]', '_', payload.shipment_id)
         pdf_filename = f"claim_report_{clean_shipment_id}.pdf"
-        pdf_dest_path = os.path.join(tms_claims_dir, pdf_filename)
-        with open(pdf_dest_path, "wb") as f:
-            f.write(pdf_bytes)
+        pdf_path_rel = None
+
+        if payload.include_pdf:
+            tms_claims_dir = os.path.join(os.getcwd(), "tms_claims")
+            os.makedirs(tms_claims_dir, exist_ok=True)
+
+            telemetry_hash = compute_canonical_hash(sanitized_telemetry)
+            terms_hash = compute_canonical_hash(terms)
+            input_seal = hashlib.sha256(f"{telemetry_hash}:{terms_hash}".encode('utf-8')).hexdigest()
+
+            pdf_payload = {
+                "shipment_id": payload.shipment_id,
+                "cargo_type": payload.cargo_type,
+                "commercial_value": payload.commercial_value_usd,
+                "extracted_terms": terms,
+                "report": result.get("final_structured_report", {}),
+                "input_seal": input_seal
+            }
+            pdf_bytes = generate_claim_pdf(pdf_payload)
+
+            register_audit_seal(
+                shipment_id=payload.shipment_id,
+                telemetry=sanitized_telemetry,
+                extracted_terms=terms,
+                pdf_bytes=pdf_bytes
+            )
+
+            pdf_dest_path = os.path.join(tms_claims_dir, pdf_filename)
+            with open(pdf_dest_path, "wb") as f:
+                f.write(pdf_bytes)
+            pdf_path_rel = f"tms_claims/{pdf_filename}"
         
         # 7. Update tms_events.json
         from datetime import datetime
@@ -400,7 +406,7 @@ def receive_tms_webhook(payload: TMSWebhookPayload):
             "assessor_output": result.get("assessor_output"),
             "legal_output": result.get("legal_output"),
             "dispatcher_output": result.get("dispatcher_output"),
-            "pdf_path": f"tms_claims/{pdf_filename}"
+            "pdf_path": pdf_path_rel
         }
         
         events_file = os.path.join(os.getcwd(), "tms_events.json")
@@ -424,7 +430,7 @@ def receive_tms_webhook(payload: TMSWebhookPayload):
             base_url = f"https://{os.environ['SPACE_HOST']}"
         pdf_download_url = (
             f"{base_url}/api/tms/download-pdf/{payload.shipment_id}"
-            if base_url else None
+            if base_url and payload.include_pdf else None
         )
 
         return {
@@ -432,7 +438,8 @@ def receive_tms_webhook(payload: TMSWebhookPayload):
             "event_id": event_id,
             "status": "Completed",
             "shipment_id": payload.shipment_id,
-            "pdf_path": f"tms_claims/{pdf_filename}",
+            "output_mode": "full" if payload.include_pdf else "summary",
+            "pdf_path": pdf_path_rel,
             "pdf_download_url": pdf_download_url,
             "liable_party": liability.get("liable_party"),
             "fault_percentage": liability.get("fault_percentage"),

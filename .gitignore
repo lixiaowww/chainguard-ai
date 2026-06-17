@@ -23,7 +23,7 @@ chainguard.db-journal
 # Runtime generated documents
 tms_claims/
 contracts/uploaded_*
-verified_cases/
+integrations/quota.json
 
 # IDE files
 .idea/
