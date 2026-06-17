@@ -1132,19 +1132,26 @@ fetch(url, {
               </button>
             </div>
             
-            <div className="flex items-center gap-3 ml-4 bg-zinc-100 p-1 border border-hd-line font-mono text-[9px] font-bold uppercase">
-              <div className="flex items-center gap-1.5 px-2">
-                <UserCircle className="h-3.5 w-3.5 text-zinc-700" />
-                <span className="text-zinc-800">{session.user.email}</span>
+            {authRequired && session ? (
+              <div className="flex items-center gap-3 ml-4 bg-zinc-100 p-1 border border-hd-line font-mono text-[9px] font-bold uppercase">
+                <div className="flex items-center gap-1.5 px-2">
+                  <UserCircle className="h-3.5 w-3.5 text-zinc-700" />
+                  <span className="text-zinc-800">{session.user.email}</span>
+                </div>
+                <button 
+                  onClick={handleLogout}
+                  className="bg-zinc-800 text-white px-2 py-1 hover:bg-red-750 transition-colors cursor-pointer border-l border-hd-line"
+                  title="Terminate Session"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                </button>
               </div>
-              <button 
-                onClick={handleLogout}
-                className="bg-zinc-800 text-white px-2 py-1 hover:bg-red-750 transition-colors cursor-pointer border-l border-hd-line"
-                title="Terminate Session"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-              </button>
-            </div>
+            ) : (
+              <div className="flex items-center gap-1.5 ml-4 bg-emerald-50 px-2 py-1 border border-emerald-200 font-mono text-[9px] font-bold uppercase text-emerald-700">
+                <UserCircle className="h-3.5 w-3.5" />
+                <span>Demo Mode</span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
