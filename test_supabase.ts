@@ -1,7 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
 
-const supabaseUrl = 'https://vjmwknqdeilrvocimwsw.supabase.co'
-const supabaseKey = 'sb_publishable_aJVVMTk3qgNBSlcDGpfH1w_uHyxIAX_'
+dotenv.config()
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL || ''
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || ''
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env before running this test.')
+  process.exit(1)
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function testConnection() {
