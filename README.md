@@ -10,7 +10,16 @@ pinned: false
 
 # 🛡️ ChainGuard AI: Perishable Cargo Audit & Compliance Engine
 
+**Live Demo** — Upload IoT telemetry + contract PDF → get Arrhenius spoilage analysis, liability assignment, and cryptographically sealed claim PDF in under 30 seconds.
+
 ChainGuard AI is a premium, enterprise-grade cold-chain compliance auditing, dynamic underwriting, and cryptographic verification platform. By merging bio-physical thermodynamics, international maritime/air carriage laws, multi-agent LLM arbitration, and cryptographic auditing, ChainGuard AI ensures trust and mitigates liability across global supply chains.
+
+### Try it now (3 built-in scenarios)
+1. **Cherries Customs Delay** — Port authority exemption dispute
+2. **mRNA Vaccine Cold Chain Breach** — Carrier equipment failure
+3. **Fine Burgundy Wine Shock** — Mechanical drop damage
+
+Click **Compile Compliance & Liability Assessment** → Download PDF → Verify in the Verification tab.
 
 ---
 

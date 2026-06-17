@@ -32,13 +32,52 @@ const openai = new OpenAI({
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-ChainGuard-Api-Key");
   res.setHeader("Access-Control-Allow-Credentials", "true");
   if (req.method === "OPTIONS") { res.sendStatus(200); return; }
   next();
 });
 
+function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const expected = process.env.CHAINGUARD_API_KEY;
+  if (!expected) { next(); return; }
+  const provided = req.headers["x-chainguard-api-key"];
+  if (provided !== expected) {
+    res.status(401).json({ error: "Invalid or missing X-ChainGuard-Api-Key." });
+    return;
+  }
+  next();
+}
+
 // --- ChainGuard AI 2.0 API Endpoints ---
+
+const webhookTelemetryCache = new Map<string, any[]>();
+
+function sanitizeTelemetry(points: any[]): any[] {
+  if (!Array.isArray(points)) return [];
+  return points.map((pt, idx) => {
+    const sanitized = { ...pt };
+    if (sanitized.temperature === undefined || sanitized.temperature === null || isNaN(Number(sanitized.temperature))) {
+      sanitized.temperature = 4.0;
+    } else {
+      const temp = Number(sanitized.temperature);
+      if (temp > 80) sanitized.temperature = 80;
+      else if (temp < -100) sanitized.temperature = -100;
+      else sanitized.temperature = temp;
+    }
+    if (sanitized.humidity === undefined || sanitized.humidity === null || isNaN(Number(sanitized.humidity))) {
+      sanitized.humidity = 70;
+    } else {
+      sanitized.humidity = Math.max(0, Math.min(100, Number(sanitized.humidity)));
+    }
+    if (sanitized.shock_g === undefined || sanitized.shock_g === null || isNaN(Number(sanitized.shock_g))) {
+      sanitized.shock_g = 0.1;
+    } else {
+      sanitized.shock_g = Math.max(0, Math.min(25, Number(sanitized.shock_g)));
+    }
+    return sanitized;
+  });
+}
 
 // Health check
 app.get("/api/health", (req, res) => {
@@ -79,6 +118,47 @@ app.post("/api/upload-contract", (req, res) => {
     res.json({ success: true, path: path.join("contracts", cleanName), filename: cleanName });
   } catch (error) {
     res.status(500).json({ error: "Failed to upload contract file." });
+  }
+});
+
+app.post("/api/webhook/telemetry", (req, res) => {
+  try {
+    const { shipment_id, telemetry } = req.body;
+    if (!shipment_id || !telemetry || !Array.isArray(telemetry)) {
+      res.status(400).json({ error: "shipment_id and telemetry (array) are required." });
+      return;
+    }
+    const sanitized = sanitizeTelemetry(telemetry);
+    webhookTelemetryCache.set(shipment_id, sanitized);
+    res.json({ success: true, count: sanitized.length, shipment_id });
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to ingest telemetry via Webhook." });
+  }
+});
+
+app.get("/api/active-telemetry", (req, res) => {
+  try {
+    const shipment_id = req.query.shipment_id as string;
+    if (!shipment_id) {
+      res.status(400).json({ error: "shipment_id query parameter is required." });
+      return;
+    }
+    res.json({ telemetry: webhookTelemetryCache.get(shipment_id) || null });
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to retrieve active telemetry." });
+  }
+});
+
+app.get("/api/eval-results", (req, res) => {
+  try {
+    const evalPath = path.join(process.cwd(), "evaluation_dashboard.json");
+    if (!fs.existsSync(evalPath)) {
+      res.json({ error: "No evaluation results found. Please run accuracy tests first." });
+      return;
+    }
+    res.json(JSON.parse(fs.readFileSync(evalPath, "utf-8")));
+  } catch (error: any) {
+    res.status(500).json({ error: "Failed to read evaluation dashboard." });
   }
 });
 
@@ -147,8 +227,8 @@ app.post("/api/analyze-telemetry", async (req, res) => {
   }
 });
 
-// TMS Webhook - Proxy to Python
-app.post("/api/tms/webhook", async (req, res) => {
+// TMS Webhook - Proxy to Python (Zapier / Make.com / TMS integrations)
+app.post("/api/tms/webhook", requireApiKey, async (req, res) => {
   try {
     const response = await fetch("http://localhost:8081/v1/tms/webhook", {
       method: "POST",
@@ -198,6 +278,104 @@ app.get("/api/audit/chain", async (req, res) => {
   }
 });
 
+app.post("/api/feedback", async (req, res) => {
+  try {
+    const response = await fetch("http://localhost:8081/v1/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body),
+    });
+    const result = await response.json();
+    res.status(response.ok ? 200 : 500).json(result);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/tms/download-pdf/:shipment_id", async (req, res) => {
+  try {
+    const { shipment_id } = req.params;
+    const response = await fetch(`http://localhost:8081/v1/tms/download-pdf/${encodeURIComponent(shipment_id)}`);
+    if (!response.ok) {
+      const errText = await response.text();
+      res.status(response.status).json({ error: errText });
+      return;
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename=claim_report_${shipment_id}.pdf`);
+    res.send(buffer);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/audit/verify", async (req, res) => {
+  try {
+    const { file_base64, filename, shipment_id, telemetry, extracted_terms } = req.body;
+    if (!file_base64) {
+      res.status(400).json({ error: "file_base64 is required." });
+      return;
+    }
+    const pdfBlob = new Blob([Buffer.from(file_base64, "base64")], { type: "application/pdf" });
+    const formData = new FormData();
+    formData.append("pdf_file", pdfBlob, filename || "report.pdf");
+    if (shipment_id) formData.append("shipment_id", shipment_id);
+    if (telemetry) formData.append("telemetry", telemetry);
+    if (extracted_terms) formData.append("extracted_terms", extracted_terms);
+
+    const response = await fetch("http://localhost:8081/v1/audit/verify", { method: "POST", body: formData });
+    if (!response.ok) {
+      res.status(500).json({ error: await response.text() });
+      return;
+    }
+    res.json(await response.json());
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/chat-assistant", async (req, res) => {
+  try {
+    const { messages, shipment_data, analysis_report } = req.body;
+    if (!messages || !Array.isArray(messages) || !shipment_data) {
+      res.status(400).json({ error: "Missing required chat messages or shipment data." });
+      return;
+    }
+
+    const shipment_id = shipment_data.shipment_id || "N/A";
+    const cargo_type = shipment_data.cargo_type || "N/A";
+    const commercial_value = shipment_data.commercial_value_usd || 0;
+    const incident_context = shipment_data.incident_context || "N/A";
+    const telemetry = shipment_data.iot_telemetry_history || [];
+
+    const systemPrompt = `You are the ChainGuard AI assistant for cold-chain logistics liability.
+Shipment: ${shipment_id}, Cargo: ${cargo_type}, Value: $${commercial_value} USD.
+Context: ${incident_context}. Telemetry points: ${telemetry.length}.
+Report: ${analysis_report ? JSON.stringify(analysis_report) : "Not compiled yet."}
+Answer concisely about liability, damage, contract terms, or telemetry.`;
+
+    if (!process.env.DEEPSEEK_API_KEY && !process.env.GEMINI_API_KEY) {
+      const query = (messages[messages.length - 1]?.content || "").toLowerCase();
+      let reply = `ChainGuard AI advisor for Shipment **${shipment_id}** (${cargo_type}). Ask about liability, damage, contract terms, or telemetry.`;
+      if (query.includes("liable") && analysis_report?.liability_assignment) {
+        const la = analysis_report.liability_assignment;
+        reply = `Primary liability: **${la.liable_party}** at **${la.fault_percentage}%**. Evidence: "${la.evidence_citation}".`;
+      }
+      res.json({ content: reply });
+      return;
+    }
+
+    const response = await openai.chat.completions.create({
+      model: process.env.DEEPSEEK_API_KEY ? "deepseek-chat" : "gpt-3.5-turbo",
+      messages: [{ role: "system", content: systemPrompt }, ...messages],
+    });
+    res.json({ content: response.choices[0]?.message?.content || "Unable to generate response." });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Static Assets & Runtime Env Injection
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
@@ -210,7 +388,11 @@ async function startServer() {
       const indexPath = path.join(distPath, "index.html");
       if (fs.existsSync(indexPath)) {
         let html = fs.readFileSync(indexPath, "utf8");
-        const runtimeEnv = { VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY };
+        const runtimeEnv = {
+          VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
+          VITE_REQUIRE_AUTH: process.env.VITE_REQUIRE_AUTH ?? "false",
+        };
         const envScript = `<script>window.__ENV__ = ${JSON.stringify(runtimeEnv)};</script>`;
         html = html.replace("<head>", `<head>${envScript}`);
         res.send(html);

@@ -45,6 +45,13 @@ import {
 import { ShipmentData, TelemetryPoint, AnalysisReport, Contract, Message } from "./types";
 import { SCENARIOS } from "./scenariosData";
 
+const requireAuth = () => {
+  const raw = import.meta.env.VITE_REQUIRE_AUTH
+    ?? (window as any).__ENV__?.VITE_REQUIRE_AUTH
+    ?? "false";
+  return raw === "true" || raw === true;
+};
+
 function LoginView({ onLogin }: { onLogin: () => void }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -105,10 +112,15 @@ function LoginView({ onLogin }: { onLogin: () => void }) {
 }
 
 export default function App() {
+  const authRequired = requireAuth();
   const [session, setSession] = useState<any>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(authRequired);
 
   useEffect(() => {
+    if (!authRequired) {
+      setAuthLoading(false);
+      return;
+    }
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setAuthLoading(false);
@@ -117,7 +129,7 @@ export default function App() {
       setSession(session);
     });
     return () => subscription.unsubscribe();
-  }, []);
+  }, [authRequired]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -1061,7 +1073,7 @@ fetch(url, {
 
   const { alerts: telemetryAlerts, tempMin, tempMax, maxShock } = getTelemetryAlerts();
 
-  if (authLoading) {
+  if (authRequired && authLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center font-mono">
         <Loader2 className="h-8 w-8 text-red-650 animate-spin" />
@@ -1070,7 +1082,7 @@ fetch(url, {
     );
   }
 
-  if (!session) {
+  if (authRequired && !session) {
     return <LoginView onLogin={() => {}} />;
   }
 

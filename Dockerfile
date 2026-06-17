@@ -1,5 +1,5 @@
 # Use Node.js for building the frontend and running the Node backend
-# Trigger rebuild: 2026-06-08 22:30
+# Trigger rebuild: 2026-06-17 deploy
 FROM node:20-slim
 
 # Install Python and other necessary tools
@@ -34,6 +34,7 @@ EXPOSE 7860
 # Set environment variables
 ENV PORT=7860
 ENV NODE_ENV=production
+ENV VITE_REQUIRE_AUTH=false
 
 # Start script to run both backends
 COPY start.sh /app/start.sh

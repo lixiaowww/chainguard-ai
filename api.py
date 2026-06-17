@@ -416,11 +416,30 @@ def receive_tms_webhook(payload: TMSWebhookPayload):
         with open(events_file, "w", encoding="utf-8") as f:
             json.dump(events_list, f, indent=2, ensure_ascii=False)
             
+        report = result.get("final_structured_report", {})
+        liability = report.get("liability_assignment", {}) or {}
+        damage = report.get("damage_assessment", {}) or {}
+        base_url = os.environ.get("APP_URL", "").rstrip("/")
+        if not base_url and os.environ.get("SPACE_HOST"):
+            base_url = f"https://{os.environ['SPACE_HOST']}"
+        pdf_download_url = (
+            f"{base_url}/api/tms/download-pdf/{payload.shipment_id}"
+            if base_url else None
+        )
+
         return {
             "success": True,
             "event_id": event_id,
             "status": "Completed",
-            "pdf_path": f"tms_claims/{pdf_filename}"
+            "shipment_id": payload.shipment_id,
+            "pdf_path": f"tms_claims/{pdf_filename}",
+            "pdf_download_url": pdf_download_url,
+            "liable_party": liability.get("liable_party"),
+            "fault_percentage": liability.get("fault_percentage"),
+            "estimated_loss_usd": damage.get("estimated_loss_usd"),
+            "damage_status": damage.get("status"),
+            "evidence_citation": liability.get("evidence_citation"),
+            "report": report,
         }
     except Exception as e:
         print(f"TMS Webhook Error: {str(e)}", file=sys.stderr)

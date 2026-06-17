@@ -19,6 +19,9 @@ Go to **Settings** -> **Variables and secrets** in your Space and add the follow
 | `GEMINI_API_KEY` | Secret | Your Google Gemini API Key (Fallback) |
 | `VITE_SUPABASE_URL` | Variable | Your Supabase Project URL |
 | `VITE_SUPABASE_ANON_KEY` | Secret | Your Supabase Anon Key |
+| `VITE_REQUIRE_AUTH` | Variable | `false` for public demo (default); set `true` to require login |
+| `APP_URL` | Variable | Public Space URL, e.g. `https://yourname-chainguard-ai.hf.space` (for Zapier PDF links) |
+| `CHAINGUARD_API_KEY` | Secret | API key for Zapier/Make.com webhook calls |
 | `DATABASE_URL` | Secret | Your Supabase PostgreSQL Connection String |
 
 ### 3. Upload Files
