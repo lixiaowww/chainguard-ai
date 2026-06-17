@@ -311,7 +311,7 @@ class TMSWebhookPayload(BaseModel):
     include_pdf: bool = True
 
 @app.post("/v1/tms/webhook")
-def receive_tms_webhook(payload: TMSWebhookPayload):
+async def receive_tms_webhook(payload: TMSWebhookPayload):
     try:
         # 1. Apply sanitization & PII masking
         sanitized_telemetry = sanitize_telemetry(payload.telemetry)
@@ -345,7 +345,7 @@ def receive_tms_webhook(payload: TMSWebhookPayload):
         }
         
         scorer = LiabilityScorer(shipment_data, terms)
-        result = scorer.run_debate_loop(mock=mock_mode)
+        result = await scorer.run_debate_loop(mock=mock_mode)
         
         # 5. Apply Output Guardrails
         if "final_structured_report" in result:
